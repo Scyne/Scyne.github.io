@@ -1,74 +1,393 @@
 <!doctype html>
 <html>
 <head>
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-11040240-2"></script>
-			<script>
-  		window.dataLayer = window.dataLayer || [];
-  		function gtag(){dataLayer.push(arguments);}
-  		gtag('js', new Date());
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-11040240-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-11040240-2');
+  </script>
 
-  		gtag('config', 'UA-11040240-2');
-			</script>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>Ki Scyne</title>
+  <link rel="Shortcut Icon" href="/favicon.ico" type="image/x-icon" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta name="robots" content="all" />
+  <meta name="MSSmartTagsPreventParsing" content="true" />
+  <meta http-equiv="imagetoolbar" content="false" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <style>
+    * { 
+      padding: 0; 
+      margin: 0; 
+      box-sizing: border-box;
+    }
 
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title>Ki Scyne</title>
-	<link rel="Shortcut Icon" href="/favicon.ico" type="image/x-icon" />
-	<meta http-equiv="pragma" content="no-cache" />
-	<meta name="robots" content="all" />
-	<meta name="MSSmartTagsPreventParsing" content="true" />
-	<meta http-equiv="imagetoolbar" content="false" />
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<!--[if lt IE 9]>
-	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
-	<style>
-		* { padding: 0; margin: 0; }
-		body { background-color: #333; }
-		p { color: #fff; font-family: Helvetica; font-size: 16px; line-height: 24px; margin-bottom: 22px; -webkit-font-smoothing: antialiased; }
-		a { color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.3); }
-		a:hover { color: #0400f5; border-bottom: 1px solid rgba(255,255,255,1); }
-		#monogram { width: 50px; padding: 50px 0 0 0; margin: 0 auto 0 50px; }
-		#about { width: 360px; padding: 0 0 0 150px; margin: -35px 50px 0 auto !important; }
-		@media (max-width: 767px) {
-			#monogram { position: relative; width: auto; padding: 20px; margin: 0; }
-			#about { position: relative; width: auto; padding: 20px; margin: 0 !important; }
-			background-image { opacity: 0.2; }
-		}
-	</style>
+    body { 
+      background-color: #00000C; 
+      font-family: 'Helvetica', sans-serif;
+      color: #FFFFFF;
+      overflow-x: hidden;
+    }
+
+    .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: -100;
+    }
+
+    .video-background iframe {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 177.77vh;
+      min-width: 100%;
+      min-height: 100%;
+      transform: translate(-50%, -50%);
+      aspect-ratio: 16/9;
+      pointer-events: none;
+    }
+
+    .scyne-logo {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 80vh;
+      background-color: #FFFFFF;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .logo-text {
+      color: #00000C;
+      font-weight: bold;
+      font-size: 220px;
+      transform: rotate(90deg);
+      transform-origin: center;
+      letter-spacing: 2px;
+      line-height: 0.8;
+    }
+
+    .logo-text-mobile {
+      display: none;
+      color: #00000C;
+      transform: rotate(90deg);
+      font-weight: bold;
+      font-size: 150px;
+    }
+
+    .menu-dropdown {
+      position: absolute;
+      top: 0;
+      right: 310px;
+      background-color: rgba(0, 0, 153, 0.8);
+      border: 1px solid #8693AB;
+      backdrop-filter: blur(5px);
+      flex-direction: column;
+      width: 150px;
+      box-shadow: 0 0 15px rgba(4, 0, 245, 0.3);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .menu-dropdown.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .menu-item {
+      padding: 12px 20px;
+      color: #FFFFFF;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #8693AB;
+    }
+
+    .menu-item:hover {
+      background-color: #000099;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 12, 0.7);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background-color: #00000C;
+      margin: 10% auto;
+      padding: 0;
+      width: 70%;
+      max-width: 700px;
+      border: 1px solid #8693AB;
+      box-shadow: 0 0 25px rgba(4, 0, 245, 0.5);
+      animation-name: animatetop;
+      animation-duration: 0.4s;
+      position: relative;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      background: #000099;
+      color: #FFFFFF;
+      border-bottom: 1px solid #8693AB;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 2px;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .headshot {
+      float: right;
+      margin: 0 0 15px 15px;
+      max-width: 150px;
+      border: 2px solid #8693AB;
+    }
+
+    .close {
+      color: #FFFFFF;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #0400f5;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    @keyframes animatetop {
+      from {top: -300px; opacity: 0}
+      to {top: 0; opacity: 1}
+    }
+
+    a { 
+      color: #0400f5; 
+      font-weight: bold; 
+      text-decoration: none; 
+      border-bottom: 1px solid rgba(4, 0, 245, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    a:hover { 
+      color: #000099; 
+      border-bottom: 1px solid #000099;
+    }
+
+    p {
+      margin-bottom: 15px;
+      line-height: 1.6;
+      color: #FFFFFF;
+    }
+
+    .links-list {
+      list-style-type: none;
+    }
+
+    .links-list li {
+      margin-bottom: 15px;
+    }
+
+    @media (max-width: 767px) {
+      .scyne-logo {
+        height: 60vh;
+        width: 200px;
+      }
+      
+      .logo-text {
+        display: none;
+      }
+      
+      .logo-text-mobile {
+        display: block;
+      }
+      
+      .menu-dropdown {
+        right: 210px;
+        width: 120px;
+      }
+      
+      .modal-content {
+        width: 90%;
+        margin: 20% auto;
+      }
+      
+      .headshot {
+        float: none;
+        display: block;
+        margin: 0 auto 15px auto;
+        max-width: 120px;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <!-- Video Background -->
+  <div class="video-background">
+    <iframe 
+      src="https://www.youtube.com/embed/zdPbg3Ji6QM?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&playlist=zdPbg3Ji6QM&mute=1&playsinline=1&enablejsapi=1&modestbranding=1&origin=scyne.com"
+      frameborder="0" 
+      allowfullscreen 
+      allow="autoplay; encrypted-media">
+    </iframe>
+  </div>
 
-<!-- swap out for a logo -->
-<div id="monogram">
-</div>
+  <!-- SCYNE Logo -->
+  <div class="scyne-logo">
+    <span class="logo-text">SCYNE</span>
+    <span class="logo-text-mobile">SCYNE</span>
+  </div>
+  
+  <!-- Menu Dropdown -->
+  <div class="menu-dropdown">
+    <div class="menu-item" id="about-trigger">About</div>
+    <div class="menu-item" id="projects-trigger">Projects</div>
+    <div class="menu-item" id="links-trigger">Links</div>
+  </div>
 
-<!-- swap out for information about yourself -->
-<div id="about">
-	<p>Ki Scyne IRL is the personality behind the <a href="http://twitch.scyne.com">V-Tuber Scyne and The Scynewave Show on Twitch</a> and CEO of Scynewave Studios. You can find all of their shows on <a href="https://open.spotify.com/show/7Iji9adSQUUfJRseNfufUl">The Scynewave Channel</a> Podcast Feed on spotify or anywhere else your get your podcasts. Ki is a magician, a proud member of the <a href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a href="https://twitter.com/shwood">Brian Brushwood’s</a> legitimately illegitimate black child.
-	<p>Ki is <a href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Ambigender</a> (Ey/Em/Eir), writes in 280 characters at <a href="http://twitter.com/KiScyne">@KiScyne on Twitter</a>, listens to all their music on <a href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a href="mailto:Ki@Scyne.com">Ki@Scyne.com</a>.
-	<p>A total oddball, Ki currently lives with the best Husband in the world and their partner in Pelham, Ga. They have two cats whom are good boys named Galen and Notch, a puppy named Xena, and a handsome puppy named Bear-Bear. All of them are perfect in every way. </p>
-	<p>You can find em on the internet by going entering url <a herf="scyne.com">[enter_service_here].Scyne.com</a> <!-- or send em stuff via the mail at:</p>
-	<p>Ki Scyne - HEY THERE SOURCE CODE READER! I Need to get a new PO Box... wanna Donate to help? Cashapp = $scyne -
-		<br>PO Box 948
-		<br>Pelham, GA
-		<br>United States</p> -->
-</div>
+  <!-- About Modal -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close">&times;</span>
+        <h2>About</h2>
+      </div>
+      <div class="modal-body">
+        <img src="WavesHeadshot.png" alt="Ki Scyne" class="headshot">
+        <p>Ki Scyne IRL is the personality behind the <a href="http://twitch.scyne.com">V-Tuber Scyne and //:SIGNAL on Twitch</a>. Ki is a magician, a proud member of the <a href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a href="https://twitter.com/shwood">Brian Brushwood's</a> legitimately illegitimate black child.</p>
+        <p>Ki is <a href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Ambigender</a> (Ey/Em/Eir), writes in 300 characters at <a href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all their music on <a href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a href="mailto:Ki@Scyne.com">Ki@Scyne.com</a>.</p>
+        <p>Ki currently lives with the best Husband in the world and their partner in Albany, Ga. They have four cats whom are good babies named Galen, Marshmallow, Han, and Chewie, and two beautiful puppers named Xena and Bear-Bear. All of them are perfect in every way.</p>
+        <p>You can find em on the internet by going entering url <a href="scyne.com">[enter_service_here].Scyne.com</a></p>
+      </div>
+    </div>
+  </div>
 
-<!--include jquery & backstretch-->
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-<script type="text/javascript" src="jquery.backstretch.min.js"></script>
-<script type="text/javascript">
-$(function(){
-     $(window).resize(function(){
-         if($(this).width() >= 760){
-             $.backstretch("scyne_bg.jpg", {speed: 150});
-         }
-      })
-      .resize();//trigger resize on page load
-});
-</script>
+  <!-- Links Modal -->
+  <div id="links-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close">&times;</span>
+        <h2>Links</h2>
+      </div>
+      <div class="modal-body">
+        <ul class="links-list">
+          <li><a href="http://twitch.scyne.com">Twitch</a></li>
+          <li><a href="https://bsky.app/profile/scyne.com">Bluesky</a></li>
+          <li><a href="mailto:Ki@Scyne.com">Email</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
+  <!-- Projects Modal -->
+  <div id="projects-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close">&times;</span>
+        <h2>Projects</h2>
+      </div>
+      <div class="modal-body">
+        <p>Projects coming soon...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      let menuTimer;
+      const menuHoverDelay = 1000; // 1 second delay
+
+      // Desktop hover logic
+      function setupDesktopMenu() {
+        const menuArea = $(".scyne-logo, .menu-dropdown");
+        
+        menuArea.on("mouseenter", function() {
+          clearTimeout(menuTimer);
+          $(".menu-dropdown").addClass("visible");
+        });
+
+        menuArea.on("mouseleave", function(e) {
+          // Only hide if leaving the combined menu area
+          if (!$(e.relatedTarget).closest('.scyne-logo, .menu-dropdown').length) {
+            menuTimer = setTimeout(() => {
+              $(".menu-dropdown").removeClass("visible");
+            }, menuHoverDelay);
+          }
+        });
+      }
+
+      // Mobile click logic
+      function setupMobileMenu() {
+        $(".scyne-logo").click(() => {
+          $(".menu-dropdown").toggleClass("visible");
+        });
+      }
+
+      // Modal controls
+      const handleModals = () => {
+        $(".menu-item").click(function() {
+          const target = $(this).attr('id').replace('-trigger', '-modal');
+          $("#" + target).show();
+          $(".menu-dropdown").removeClass("visible");
+        });
+
+        $(".close, .modal").click(function(e) {
+          if ($(e.target).is(".modal, .close")) {
+            $(".modal").hide();
+          }
+        });
+      };
+
+      // Initial setup
+      if (window.innerWidth > 767) {
+        setupDesktopMenu();
+      } else {
+        setupMobileMenu();
+      }
+      handleModals();
+
+      // Window resize handler
+      $(window).resize(() => {
+        $(".menu-dropdown").removeClass("visible");
+        if (window.innerWidth > 767) {
+          setupDesktopMenu();
+        } else {
+          setupMobileMenu();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
