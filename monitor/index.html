@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scyne Activity Monitor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Scyne Activity Monitor</h1>
+            <div class="current-time" id="currentTime"></div>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="status">Status</button>
+            <button class="tab-btn" data-tab="setup">Setup</button>
+        </nav>
+
+        <div class="tab-content active" id="status-tab">
+            <div class="main-status-card card">
+                <div class="status-indicator-container">
+                    <div class="status-circle" id="statusCircle">
+                        <div class="status-dot" id="statusDot"></div>
+                    </div>
+                    <div class="status-text" id="statusText">Active</div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card card">
+                    <h3>Last Activity</h3>
+                    <div class="info-value" id="lastActivity">Just now</div>
+                </div>
+
+                <div class="info-card card">
+                    <h3>Time Since Activity</h3>
+                    <div class="info-value" id="timeSince">45 seconds</div>
+                </div>
+
+                <div class="info-card card">
+                    <h3>Connection Status</h3>
+                    <div class="connection-status">
+                        <span class="connection-dot" id="connectionDot"></span>
+                        <span class="info-value" id="connectionStatus">Connected</span>
+                    </div>
+                </div>
+
+                <div class="info-card card">
+                    <h3>Monitoring Since</h3>
+                    <div class="info-value">Today 13:00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="setup-tab">
+            <div class="setup-content">
+                <div class="card">
+                    <h2>Setup Instructions</h2>
+                    
+                    <div class="setup-section">
+                        <h3>Backend Options</h3>
+                        <div class="setup-option">
+                            <h4>Option 1: Free Cloud Solutions</h4>
+                            <ul>
+                                <li><strong>Railway:</strong> Free tier with 512MB RAM, perfect for small monitoring apps</li>
+                                <li><strong>Render:</strong> Free tier with automatic deploys from GitHub</li>
+                                <li><strong>Fly.io:</strong> Free allowance for small applications</li>
+                                <li><strong>Supabase:</strong> Free PostgreSQL database with real-time subscriptions</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="setup-option">
+                            <h4>Option 2: Your Ubuntu Server (hive.scyne.com)</h4>
+                            <p>Since you have an Ubuntu server available, you can:</p>
+                            <ul>
+                                <li>Deploy a simple Node.js/Express backend</li>
+                                <li>Use SQLite for lightweight data storage</li>
+                                <li>Set up nginx as a reverse proxy</li>
+                                <li>Use PM2 for process management</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="setup-section">
+                        <h3>macOS Permissions & Setup</h3>
+                        <ol>
+                            <li><strong>System Preferences → Security & Privacy → Privacy</strong></li>
+                            <li>Enable "Accessibility" for your monitoring app</li>
+                            <li>Enable "Screen Recording" if needed</li>
+                            <li>For network monitoring, enable "Full Disk Access"</li>
+                        </ol>
+                    </div>
+
+                    <div class="setup-section">
+                        <h3>Recommended Architecture</h3>
+                        <div class="architecture-flow">
+                            <div class="arch-step">Mac Client</div>
+                            <div class="arch-arrow">→</div>
+                            <div class="arch-step">WebSocket/API</div>
+                            <div class="arch-arrow">→</div>
+                            <div class="arch-step">Backend Server</div>
+                            <div class="arch-arrow">→</div>
+                            <div class="arch-step">Web Dashboard</div>
+                        </div>
+                    </div>
+
+                    <div class="setup-section">
+                        <h3>Quick Start Commands</h3>
+                        <div class="code-block">
+                            <pre><code># Install dependencies
+npm install express socket.io cors
+
+# Basic server setup
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+server.listen(3000, () => {
+  console.log('Server running on port 3000');
+});</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
