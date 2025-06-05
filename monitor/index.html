@@ -4,7 +4,281 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scyne Activity Monitor</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --bright-blue: #0400f5;
+            --dark-blue: #000099;
+            --very-dark-blue: #00000C;
+            --grayish-blue: #8693AB;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--very-dark-blue), var(--dark-blue));
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--white);
+        }
+
+        .current-time {
+            font-size: 1.2rem;
+            color: var(--grayish-blue);
+        }
+
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: 2px solid var(--grayish-blue);
+            color: var(--grayish-blue);
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--bright-blue);
+            border-color: var(--bright-blue);
+            color: var(--white);
+        }
+
+        .tab-btn:hover {
+            border-color: var(--bright-blue);
+            color: var(--bright-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .main-status-card {
+            text-align: center;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .status-indicator-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 4px solid var(--bright-blue);
+            background: rgba(4, 0, 245, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        .status-circle.inactive {
+            border-color: var(--grayish-blue);
+            background: rgba(134, 147, 171, 0.1);
+            animation: none;
+        }
+
+        .status-dot {
+            width: 80px;
+            height: 80px;
+            background: var(--bright-blue);
+            border-radius: 50%;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .status-dot.inactive {
+            background: var(--grayish-blue);
+            animation: none;
+        }
+
+        .status-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--white);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-card h3 {
+            color: var(--grayish-blue);
+            margin-bottom: 10px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--white);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .connection-dot {
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        .connection-dot.disconnected {
+            background: #ff0000;
+        }
+
+        .setup-content {
+            line-height: 1.6;
+        }
+
+        .setup-content h2 {
+            color: var(--bright-blue);
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+
+        .setup-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .setup-content h3 {
+            color: var(--white);
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+
+        .setup-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .setup-content li {
+            margin-bottom: 5px;
+        }
+
+        .setup-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--bright-blue);
+        }
+
+        .setup-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border-left: 4px solid var(--bright-blue);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(4, 0, 245, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(4, 0, 245, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(4, 0, 245, 0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+            51%, 100% {
+                opacity: 0.3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .status-circle {
+                width: 150px;
+                height: 150px;
+            }
+
+            .status-dot {
+                width: 60px;
+                height: 60px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -14,8 +288,8 @@
         </header>
 
         <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="status">Status</button>
-            <button class="tab-btn" data-tab="setup">Setup</button>
+            <button class="tab-btn active" onclick="switchTab('status')">Status</button>
+            <button class="tab-btn" onclick="switchTab('setup')">Setup</button>
         </nav>
 
         <div class="tab-content active" id="status-tab">
@@ -48,89 +322,207 @@
                 </div>
 
                 <div class="info-card card">
-                    <h3>Monitoring Since</h3>
-                    <div class="info-value">Today 13:00</div>
+                    <h3>Session Duration</h3>
+                    <div class="info-value" id="sessionDuration">4h 32m</div>
                 </div>
             </div>
         </div>
 
         <div class="tab-content" id="setup-tab">
-            <div class="setup-content">
-                <div class="card">
-                    <h2>Setup Instructions</h2>
-                    
-                    <div class="setup-section">
-                        <h3>Backend Options</h3>
-                        <div class="setup-option">
-                            <h4>Option 1: Free Cloud Solutions</h4>
-                            <ul>
-                                <li><strong>Railway:</strong> Free tier with 512MB RAM, perfect for small monitoring apps</li>
-                                <li><strong>Render:</strong> Free tier with automatic deploys from GitHub</li>
-                                <li><strong>Fly.io:</strong> Free allowance for small applications</li>
-                                <li><strong>Supabase:</strong> Free PostgreSQL database with real-time subscriptions</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="setup-option">
-                            <h4>Option 2: Your Ubuntu Server (hive.scyne.com)</h4>
-                            <p>Since you have an Ubuntu server available, you can:</p>
-                            <ul>
-                                <li>Deploy a simple Node.js/Express backend</li>
-                                <li>Use SQLite for lightweight data storage</li>
-                                <li>Set up nginx as a reverse proxy</li>
-                                <li>Use PM2 for process management</li>
-                            </ul>
-                        </div>
-                    </div>
+            <div class="card setup-content">
+                <h2>🚀 Setup Instructions</h2>
 
-                    <div class="setup-section">
-                        <h3>macOS Permissions & Setup</h3>
-                        <ol>
-                            <li><strong>System Preferences → Security & Privacy → Privacy</strong></li>
-                            <li>Enable "Accessibility" for your monitoring app</li>
-                            <li>Enable "Screen Recording" if needed</li>
-                            <li>For network monitoring, enable "Full Disk Access"</li>
-                        </ol>
-                    </div>
+                <h3>Backend Options (100% Free)</h3>
 
-                    <div class="setup-section">
-                        <h3>Recommended Architecture</h3>
-                        <div class="architecture-flow">
-                            <div class="arch-step">Mac Client</div>
-                            <div class="arch-arrow">→</div>
-                            <div class="arch-step">WebSocket/API</div>
-                            <div class="arch-arrow">→</div>
-                            <div class="arch-step">Backend Server</div>
-                            <div class="arch-arrow">→</div>
-                            <div class="arch-step">Web Dashboard</div>
-                        </div>
-                    </div>
+                <h2>Option 1: Supabase (Recommended)</h2>
+                <p>Supabase offers a generous free tier perfect for this use case:</p>
+                <ul>
+                    <li><strong>Free tier includes:</strong> 500MB database storage, 2GB bandwidth, 50,000 monthly active users</li>
+                    <li><strong>Realtime subscriptions:</strong> Unlimited on free tier</li>
+                    <li><strong>Setup:</strong> Create account at supabase.com, create new project, copy API URL and anon key</li>
+                </ul>
 
-                    <div class="setup-section">
-                        <h3>Quick Start Commands</h3>
-                        <div class="code-block">
-                            <pre><code># Install dependencies
+                <h2>Option 2: Your Ubuntu Server (hive.scyne.com)</h2>
+                <p>Self-hosted solution using your existing server:</p>
+                <ul>
+                    <li><strong>Cost:</strong> Completely free (uses your existing server)</li>
+                    <li><strong>Control:</strong> Full control over data and infrastructure</li>
+                    <li><strong>Setup:</strong> Install Node.js + Socket.io server (instructions below)</li>
+                </ul>
+
+                <h3>🖥️ macOS Desktop Monitor Setup</h3>
+
+                <h2>Step 1: Install Python Dependencies</h2>
+                <pre><code>pip3 install pynput requests</code></pre>
+
+                <h2>Step 2: Grant macOS Permissions</h2>
+                <p><strong>Critical:</strong> macOS requires special permissions for monitoring input:</p>
+                <ul>
+                    <li>Go to <strong>System Preferences → Security & Privacy → Privacy</strong></li>
+                    <li>Click <strong>Accessibility</strong> in the left sidebar</li>
+                    <li>Click the lock icon and enter your password</li>
+                    <li>Add your Terminal app (Applications → Utilities → Terminal)</li>
+                    <li>If using an IDE, also add PyCharm/VS Code/etc.</li>
+                    <li>For macOS Monterey+: Also add to <strong>Input Monitoring</strong></li>
+                </ul>
+
+                <h2>Step 3: Test Permissions</h2>
+                <p>Run this test script to verify permissions work:</p>
+                <pre><code>from pynput import mouse, keyboard
+print("Testing permissions...")
+print(f"Mouse listener trusted: {mouse.Listener.IS_TRUSTED}")
+print(f"Keyboard listener trusted: {keyboard.Listener.IS_TRUSTED}")
+if not mouse.Listener.IS_TRUSTED:
+    print("❌ Need to add app to Accessibility permissions")</code></pre>
+
+                <h2>Ubuntu Server Setup (Option 2)</h2>
+
+                <h3>Install Node.js and Dependencies</h3>
+                <pre><code>curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
 npm install express socket.io cors
+sudo npm install -g pm2</code></pre>
 
-# Basic server setup
+                <h3>Simple Server Code</h3>
+                <pre><code>// server.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
+});
+
+app.use(cors());
+app.use(express.json());
+
+let lastActivity = new Date();
+let isActive = false;
+
+app.post('/heartbeat', (req, res) => {
+    lastActivity = new Date();
+    isActive = true;
+    io.emit('statusUpdate', { 
+        isActive, 
+        lastActivity: lastActivity.toISOString() 
+    });
+    res.json({ success: true });
+});
+
+// Check for inactivity every 30 seconds
+setInterval(() => {
+    const now = new Date();
+    const timeSince = (now - lastActivity) / 1000;
+    if (timeSince > 300) { // 5 minutes
+        isActive = false;
+        io.emit('statusUpdate', { 
+            isActive, 
+            lastActivity: lastActivity.toISOString() 
+        });
+    }
+}, 30000);
 
 server.listen(3000, () => {
-  console.log('Server running on port 3000');
+    console.log('Activity server running on port 3000');
 });</code></pre>
-                        </div>
-                    </div>
-                </div>
+
+                <h3>Start the Server</h3>
+                <pre><code>pm2 start server.js --name "activity-monitor"
+pm2 startup
+pm2 save</code></pre>
+
+                <h2>🌐 Static Website Deployment</h2>
+
+                <h3>Deploy to Surge.sh</h3>
+                <pre><code>npm install -g surge
+surge</code></pre>
+                <p>Follow the prompts to upload your files and get a free .surge.sh domain!</p>
+
+                <h3>Alternative: Netlify</h3>
+                <ul>
+                    <li>Create account at netlify.com</li>
+                    <li>Drag and drop your website folder</li>
+                    <li>Get instant free hosting with HTTPS</li>
+                </ul>
+
+                <h2>🔧 Monitoring Script</h2>
+                <p>The Python script will run continuously and send heartbeats to your chosen backend every 30 seconds when activity is detected.</p>
+
+                <h3>Why These Options Are Free</h3>
+                <ul>
+                    <li><strong>Supabase:</strong> Free tier covers this use case completely</li>
+                    <li><strong>Your Server:</strong> Uses existing infrastructure you already pay for</li>
+                    <li><strong>Surge.sh/Netlify:</strong> Free static hosting for personal projects</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab and mark button as active
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Simulate real-time updates
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        }
+
+        function updateActivityStatus() {
+            const statuses = ['Active', 'Active', 'Active', 'Inactive']; // Mostly active for demo
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+            const statusText = document.getElementById('statusText');
+            const statusCircle = document.getElementById('statusCircle');
+            const statusDot = document.getElementById('statusDot');
+
+            statusText.textContent = randomStatus;
+
+            if (randomStatus === 'Active') {
+                statusCircle.classList.remove('inactive');
+                statusDot.classList.remove('inactive');
+            } else {
+                statusCircle.classList.add('inactive');
+                statusDot.classList.add('inactive');
+            }
+
+            // Update last activity time
+            const lastActivityTimes = ['Just now', '2 minutes ago', '5 minutes ago', '30 seconds ago'];
+            document.getElementById('lastActivity').textContent = 
+                lastActivityTimes[Math.floor(Math.random() * lastActivityTimes.length)];
+
+            // Update time since activity
+            const timeSinceOptions = ['30 seconds', '1 minute', '2 minutes', '45 seconds'];
+            document.getElementById('timeSince').textContent = 
+                timeSinceOptions[Math.floor(Math.random() * timeSinceOptions.length)];
+        }
+
+        // Update current time every second
+        setInterval(updateTime, 1000);
+
+        // Update activity status every 5 seconds for demo
+        setInterval(updateActivityStatus, 5000);
+
+        // Initialize
+        updateTime();
+        updateActivityStatus();
+    </script>
 </body>
 </html>
