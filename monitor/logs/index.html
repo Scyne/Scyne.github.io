@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scyne Activity Logs</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        :root {
+            --bright-blue: #0400f5;
+            --dark-blue: #000099;
+            --very-dark-blue: #00000C;
+            --grayish-blue: #8693AB;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--very-dark-blue), var(--dark-blue));
+            color: var(--white);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--white);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: var(--grayish-blue);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--bright-blue);
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 10px 15px;
+            border: 1px solid var(--bright-blue);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: var(--bright-blue);
+            color: var(--white);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--bright-blue);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--grayish-blue);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            position: relative;
+            height: 400px;
+        }
+
+        .chart-card canvas {
+            max-height: 350px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            padding: 10px;
+            border: 1px solid var(--grayish-blue);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        .search-box::placeholder {
+            color: var(--grayish-blue);
+        }
+
+        .filter-select {
+            padding: 10px;
+            border: 1px solid var(--grayish-blue);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .logs-table th,
+        .logs-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logs-table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--grayish-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .logs-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+
+        .status-inactive {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            border: 1px solid var(--bright-blue);
+            background: transparent;
+            color: var(--bright-blue);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--bright-blue);
+            color: var(--white);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--grayish-blue);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--grayish-blue);
+            border-radius: 50%;
+            border-top-color: var(--bright-blue);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .logs-table {
+                font-size: 0.9rem;
+            }
+            
+            .logs-table th,
+            .logs-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back to Monitor</a>
+    
+    <div class="container">
+        <header class="header">
+            <h1>Activity Logs Dashboard</h1>
+            <div class="subtitle">Historical activity data and analytics</div>
+        </header>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card card">
+                <div class="stat-value" id="totalEntries">--</div>
+                <div class="stat-label">Total Entries</div>
+            </div>
+            <div class="stat-card card">
+                <div class="stat-value" id="activeTime">--</div>
+                <div class="stat-label">Total Active Time</div>
+            </div>
+            <div class="stat-card card">
+                <div class="stat-value" id="averageSession">--</div>
+                <div class="stat-label">Avg Session</div>
+            </div>
+            <div class="stat-card card">
+                <div class="stat-value" id="lastWeekActivity">--</div>
+                <div class="stat-label">Last 7 Days</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-container">
+            <div class="chart-card card">
+                <h3 style="margin-bottom: 15px;">Activity Timeline (Last 7 Days)</h3>
+                <canvas id="timelineChart"></canvas>
+            </div>
+            <div class="chart-card card">
+                <h3 style="margin-bottom: 15px;">Daily Activity Summary</h3>
+                <canvas id="dailyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card">
+            <h3 style="margin-bottom: 20px;">Activity Logs</h3>
+            
+            <div class="controls">
+                <input type="text" id="searchInput" class="search-box" placeholder="Search logs...">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+                <div>
+                    <span style="color: var(--grayish-blue);">Show:</span>
+                    <select id="pageSize" class="filter-select" style="margin-left: 5px;">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span style="color: var(--grayish-blue); margin-left: 5px;">entries</span>
+                </div>
+            </div>
+
+            <div id="tableContainer">
+                <div class="loading">Loading activity logs...</div>
+            </div>
+
+            <div class="pagination" id="pagination" style="display: none;">
+                <button id="prevBtn">Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button id="nextBtn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://vmiggibnhcnwjmlavyqz.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtaWdnaWJuaGNud2ptbGF2eXF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTY3NTUsImV4cCI6MjA2NDczMjc1NX0.l8XAFPC6ziKhwu8D6RXZ-CVABjlCCew4jTON9GoWJvQ';
+
+        let supabaseClient;
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentPageSize = 25;
+        let allLogs = [];
+        let filteredLogs = [];
+
+        // Initialize app
+        async function initializeApp() {
+            if (typeof window.supabase === 'undefined') {
+                setTimeout(initializeApp, 100);
+                return;
+            }
+
+            const { createClient } = window.supabase;
+            supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+            await loadAllData();
+            setupEventListeners();
+        }
+
+        // Load all data and initialize dashboard
+        async function loadAllData() {
+            try {
+                // Load statistics
+                await loadStatistics();
+                
+                // Load chart data
+                await loadChartData();
+                
+                // Load table data
+                await loadTableData();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Load summary statistics
+        async function loadStatistics() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('activity_status')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allLogs = data;
+                
+                // Calculate statistics
+                const totalEntries = data.length;
+                const activeEntries = data.filter(log => log.is_active).length;
+                
+                // Calculate time periods
+                const now = new Date();
+                const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const lastWeekEntries = data.filter(log => new Date(log.created_at) >= lastWeek);
+                
+                // Update statistics display
+                document.getElementById('totalEntries').textContent = totalEntries.toLocaleString();
+                document.getElementById('activeTime').textContent = `${Math.round((activeEntries / totalEntries) * 100)}%`;
+                document.getElementById('averageSession').textContent = calculateAverageSession(data);
+                document.getElementById('lastWeekActivity').textContent = lastWeekEntries.length.toLocaleString();
+
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Calculate average session duration
+        function calculateAverageSession(logs) {
+            const sessions = [];
+            let currentSession = null;
+
+            logs.forEach(log => {
+                if (log.is_active) {
+                    if (!currentSession) {
+                        currentSession = {
+                            start: new Date(log.last_activity),
+                            end: new Date(log.last_activity)
+                        };
+                    } else {
+                        currentSession.end = new Date(log.last_activity);
+                    }
+                } else if (currentSession) {
+                    sessions.push(currentSession.end - currentSession.start);
+                    currentSession = null;
+                }
+            });
+
+            if (sessions.length === 0) return '0m';
+
+            const averageMs = sessions.reduce((a, b) => a + b, 0) / sessions.length;
+            const averageMinutes = Math.round(averageMs / (1000 * 60));
+            
+            if (averageMinutes < 60) return `${averageMinutes}m`;
+            return `${Math.round(averageMinutes / 60)}h ${averageMinutes % 60}m`;
+        }
+
+        // Load and display charts
+        async function loadChartData() {
+            try {
+                const now = new Date();
+                const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                
+                const weekData = allLogs.filter(log => new Date(log.created_at) >= lastWeek);
+                
+                // Create timeline chart
+                createTimelineChart(weekData);
+                
+                // Create daily summary chart
+                createDailySummaryChart(weekData);
+                
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+            }
+        }
+
+        // Create timeline chart
+        function createTimelineChart(data) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            // Group data by hour
+            const hourlyData = {};
+            data.forEach(log => {
+                const date = new Date(log.created_at);
+                const hour = date.getHours();
+                const day = date.toDateString();
+                const key = `${day}-${hour}`;
+                
+                if (!hourlyData[key]) {
+                    hourlyData[key] = { active: 0, inactive: 0, label: `${day} ${hour}:00` };
+                }
+                
+                if (log.is_active) {
+                    hourlyData[key].active++;
+                } else {
+                    hourlyData[key].inactive++;
+                }
+            });
+
+            const labels = Object.values(hourlyData).map(d => d.label);
+            const activeData = Object.values(hourlyData).map(d => d.active);
+            const inactiveData = Object.values(hourlyData).map(d => d.inactive);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Active',
+                        data: activeData,
+                        borderColor: '#0400f5',
+                        backgroundColor: 'rgba(4, 0, 245, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Inactive',
+                        data: inactiveData,
+                        borderColor: '#8693AB',
+                        backgroundColor: 'rgba(134, 147, 171, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#FFFFFF' }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: '#8693AB', maxTicksLimit: 10 },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: '#8693AB' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create daily summary chart
+        function createDailySummaryChart(data) {
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            
+            // Group by day
+            const dailyData = {};
+            data.forEach(log => {
+                const day = new Date(log.created_at).toDateString();
+                if (!dailyData[day]) {
+                    dailyData[day] = { active: 0, inactive: 0 };
+                }
+                if (log.is_active) {
+                    dailyData[day].active++;
+                } else {
+                    dailyData[day].inactive++;
+                }
+            });
+
+            const labels = Object.keys(dailyData).map(date => {
+                const d = new Date(date);
+                return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            });
+            const activeData = Object.values(dailyData).map(d => d.active);
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: activeData,
+                        backgroundColor: [
+                            '#0400f5',
+                            '#000099',
+                            '#8693AB',
+                            '#4a5568',
+                            '#2d3748',
+                            '#1a202c',
+                            '#171923'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#FFFFFF', font: { size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load table data with pagination
+        async function loadTableData(searchTerm = '', statusFilter = '') {
+            try {
+                // Filter data based on search and status
+                filteredLogs = allLogs.filter(log => {
+                    const matchesSearch = !searchTerm || 
+                        log.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        new Date(log.created_at).toLocaleString().toLowerCase().includes(searchTerm.toLowerCase());
+                    
+                    const matchesStatus = !statusFilter || log.is_active.toString() === statusFilter;
+                    
+                    return matchesSearch && matchesStatus;
+                });
+
+                // Calculate pagination
+                totalPages = Math.ceil(filteredLogs.length / currentPageSize);
+                currentPage = Math.min(currentPage, totalPages || 1);
+
+                // Get current page data
+                const startIndex = (currentPage - 1) * currentPageSize;
+                const endIndex = startIndex + currentPageSize;
+                const pageData = filteredLogs.slice(startIndex, endIndex);
+
+                // Render table
+                renderTable(pageData);
+                updatePagination();
+
+            } catch (error) {
+                console.error('Error loading table data:', error);
+            }
+        }
+
+        // Render table with data
+        function renderTable(data) {
+            const container = document.getElementById('tableContainer');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="loading">No activity logs found</div>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'logs-table';
+            
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Last Activity</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(log => `
+                        <tr>
+                            <td>#${log.id}</td>
+                            <td>${log.user_name}</td>
+                            <td>${new Date(log.last_activity).toLocaleString()}</td>
+                            <td>
+                                <span class="status-badge ${log.is_active ? 'status-active' : 'status-inactive'}">
+                                    ${log.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            <td>${new Date(log.created_at).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        // Update pagination controls
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const pageInfo = document.getElementById('pageInfo');
+
+            pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+            
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${filteredLogs.length} entries)`;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                currentPage = 1;
+                loadTableData(e.target.value, document.getElementById('statusFilter').value);
+            });
+
+            // Status filter
+            document.getElementById('statusFilter').addEventListener('change', (e) => {
+                currentPage = 1;
+                loadTableData(document.getElementById('searchInput').value, e.target.value);
+            });
+
+            // Page size change
+            document.getElementById('pageSize').addEventListener('change', (e) => {
+                currentPageSize = parseInt(e.target.value);
+                currentPage = 1;
+                loadTableData(document.getElementById('searchInput').value, document.getElementById('statusFilter').value);
+            });
+
+            // Pagination controls
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadTableData(document.getElementById('searchInput').value, document.getElementById('statusFilter').value);
+                }
+            });
+
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadTableData(document.getElementById('searchInput').value, document.getElementById('statusFilter').value);
+                }
+            });
+        }
+
+        // Start the application
+        initializeApp();
+    </script>
+</body>
+</html>
