@@ -322,69 +322,74 @@
                 if (hours > 0) return `${hours}h ${minutes}m`;
                 return `${minutes}m`;
             }
+// Update activity status display
+function updateStatusDisplay() {
+    const statusText = document.getElementById('statusText');
+    const statusCircle = document.getElementById('statusCircle');
+    const statusDot = document.getElementById('statusDot');
+    const lastActivityEl = document.getElementById('lastActivity');
+    const timeSinceEl = document.getElementById('timeSince');
+    const sessionDurationEl = document.getElementById('sessionDuration');
 
-            // Update activity status display
-            function updateStatusDisplay() {
-                const statusText = document.getElementById('statusText');
-                const statusCircle = document.getElementById('statusCircle');
-                const statusDot = document.getElementById('statusDot');
-                const lastActivityEl = document.getElementById('lastActivity');
-                const timeSinceEl = document.getElementById('timeSince');
-                const sessionDurationEl = document.getElementById('sessionDuration');
+    // Use the database's is_active field as the primary source of truth
+    const isCurrentlyActive = currentActivity.isActive;
 
-                // Determine if user is currently active (within last 5 minutes)
-                const isCurrentlyActive = currentActivity.lastActivity && 
-                    (new Date() - new Date(currentActivity.lastActivity)) < 300000; // 5 minutes
+    debugLog(`Database is_active: ${currentActivity.isActive}, Using status: ${isCurrentlyActive}`);
 
-                // Update main status
-                statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
-                
-                if (isCurrentlyActive) {
-                    statusCircle.classList.remove('inactive');
-                    statusDot.classList.remove('inactive');
-                } else {
-                    statusCircle.classList.add('inactive');
-                    statusDot.classList.add('inactive');
-                }
+    // Update main status
+    statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
+    
+    if (isCurrentlyActive) {
+        statusCircle.classList.remove('inactive');
+        statusDot.classList.remove('inactive');
+    } else {
+        statusCircle.classList.add('inactive');
+        statusDot.classList.add('inactive');
+    }
 
-                // Update info cards
-                lastActivityEl.textContent = currentActivity.lastActivity ? 
-                    new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
-                
-                timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
-                sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
+    // Update info cards
+    lastActivityEl.textContent = currentActivity.lastActivity ? 
+        new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
+    
+    timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
+    sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
 
-                debugLog(`Status updated: ${isCurrentlyActive ? 'Active' : 'Inactive'}`);
-            }
+    debugLog(`Status updated: ${isCurrentlyActive ? 'Active' : 'Inactive'}`);
+}
+// Load initial activity data
+async function loadInitialData() {
+    try {
+        debugLog('Loading initial data from Supabase...');
+        
+        const { data, error } = await supabaseClient
+            .from('activity_status')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-            // Load initial activity data
-            async function loadInitialData() {
-                try {
-                    debugLog('Loading initial data from Supabase...');
-                    
-                    const { data, error } = await supabaseClient
-                        .from('activity_status')
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
+        if (error) {
+            debugLog(`Error loading initial data: ${error.message}`);
+            return;
+        }
 
-                    if (error) {
-                        debugLog(`Error loading initial data: ${error.message}`);
-                        return;
-                    }
-
-                    if (data && data.length > 0) {
-                        currentActivity.lastActivity = data[0].last_activity;
-                        currentActivity.isActive = data[0].is_active;
-                        debugLog(`Initial data loaded: ${JSON.stringify(data[0])}`);
-                        updateStatusDisplay();
-                    } else {
-                        debugLog('No initial data found in database');
-                    }
-                } catch (err) {
-                    debugLog(`Failed to load initial data: ${err.message}`);
-                }
-            }
+        if (data && data.length > 0) {
+            const record = data[0];
+            currentActivity.lastActivity = record.last_activity;
+            currentActivity.isActive = record.is_active;
+            
+            debugLog(`Initial data loaded:`);
+            debugLog(`- last_activity: ${record.last_activity}`);
+            debugLog(`- is_active: ${record.is_active}`);
+            debugLog(`- created_at: ${record.created_at}`);
+            
+            updateStatusDisplay();
+        } else {
+            debugLog('No initial data found in database');
+        }
+    } catch (err) {
+        debugLog(`Failed to load initial data: ${err.message}`);
+    }
+}
 
             // Listen for real-time updates from Supabase
             function setupRealtimeListener() {
