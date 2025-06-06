@@ -341,12 +341,10 @@
 
             let lastUpdateTime = null;
 
-            // Update current time (with 4-hour correction)
+           // Update current time (normal local time)
             function updateTime() {
                 const now = new Date();
-                // Add 4 hours to current time display
-                const correctedNow = new Date(now.getTime() + (4 * 60 * 60 * 1000));
-                document.getElementById('currentTime').textContent = correctedNow.toLocaleTimeString();
+                document.getElementById('currentTime').textContent = now.toLocaleTimeString();
             }
 
             // Format time difference (with 4-hour correction)
