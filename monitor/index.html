@@ -155,6 +155,24 @@
             font-size: 0.8rem;
             color: var(--grayish-blue);
             margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none; /* Hidden by default */
+        }
+
+        .debug-info.visible {
+            display: block;
+        }
+
+        .debug-toggle-hint {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            color: var(--grayish-blue);
         }
 
         @keyframes pulse {
@@ -255,14 +273,43 @@
         </div>
     </div>
 
+    <div class="debug-toggle-hint">Press 'D' to toggle debug info</div>
+
     <script>
+        let debugVisible = false;
+
         // Debug logging function
         function debugLog(message) {
             const timestamp = new Date().toLocaleTimeString();
             const debugElement = document.getElementById('debugLog');
             debugElement.innerHTML += `<br>[${timestamp}] ${message}`;
             console.log(`[${timestamp}] ${message}`);
+            
+            // Keep debug log to reasonable size
+            const lines = debugElement.innerHTML.split('<br>');
+            if (lines.length > 30) {
+                debugElement.innerHTML = lines.slice(-25).join('<br>');
+            }
         }
+
+        // Toggle debug panel visibility
+        function toggleDebugPanel() {
+            debugVisible = !debugVisible;
+            const debugPanel = document.getElementById('debugInfo');
+            if (debugVisible) {
+                debugPanel.classList.add('visible');
+                debugLog('Debug panel opened');
+            } else {
+                debugPanel.classList.remove('visible');
+            }
+        }
+
+        // Add keyboard event listener for 'D' key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'd' || event.key === 'D') {
+                toggleDebugPanel();
+            }
+        });
 
         // Wait for Supabase to load
         function initializeApp() {
@@ -291,6 +338,8 @@
                 lastActivity: null,
                 sessionStart: new Date()
             };
+
+            let lastUpdateTime = null;
 
             // Update current time
             function updateTime() {
@@ -322,81 +371,92 @@
                 if (hours > 0) return `${hours}h ${minutes}m`;
                 return `${minutes}m`;
             }
-// Update activity status display
-function updateStatusDisplay() {
-    const statusText = document.getElementById('statusText');
-    const statusCircle = document.getElementById('statusCircle');
-    const statusDot = document.getElementById('statusDot');
-    const lastActivityEl = document.getElementById('lastActivity');
-    const timeSinceEl = document.getElementById('timeSince');
-    const sessionDurationEl = document.getElementById('sessionDuration');
 
-    // Use the database's is_active field as the primary source of truth
-    const isCurrentlyActive = currentActivity.isActive;
+            // Update activity status display
+            function updateStatusDisplay() {
+                const statusText = document.getElementById('statusText');
+                const statusCircle = document.getElementById('statusCircle');
+                const statusDot = document.getElementById('statusDot');
+                const lastActivityEl = document.getElementById('lastActivity');
+                const timeSinceEl = document.getElementById('timeSince');
+                const sessionDurationEl = document.getElementById('sessionDuration');
 
-    debugLog(`Database is_active: ${currentActivity.isActive}, Using status: ${isCurrentlyActive}`);
+                // Use the database's is_active field as the primary source of truth
+                const isCurrentlyActive = currentActivity.isActive;
 
-    // Update main status
-    statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
-    
-    if (isCurrentlyActive) {
-        statusCircle.classList.remove('inactive');
-        statusDot.classList.remove('inactive');
-    } else {
-        statusCircle.classList.add('inactive');
-        statusDot.classList.add('inactive');
-    }
+                debugLog(`Database is_active: ${currentActivity.isActive}, Using status: ${isCurrentlyActive}`);
 
-    // Update info cards
-    lastActivityEl.textContent = currentActivity.lastActivity ? 
-        new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
-    
-    timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
-    sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
+                // Update main status
+                statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
+                
+                if (isCurrentlyActive) {
+                    statusCircle.classList.remove('inactive');
+                    statusDot.classList.remove('inactive');
+                } else {
+                    statusCircle.classList.add('inactive');
+                    statusDot.classList.add('inactive');
+                }
 
-    debugLog(`Status updated: ${isCurrentlyActive ? 'Active' : 'Inactive'}`);
-}
-// Load initial activity data
-async function loadInitialData() {
-    try {
-        debugLog('Loading initial data from Supabase...');
-        
-        const { data, error } = await supabaseClient
-            .from('activity_status')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(1);
+                // Update info cards
+                lastActivityEl.textContent = currentActivity.lastActivity ? 
+                    new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
+                
+                timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
+                sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
 
-        if (error) {
-            debugLog(`Error loading initial data: ${error.message}`);
-            return;
-        }
+                debugLog(`Status updated: ${isCurrentlyActive ? 'Active' : 'Inactive'} at ${new Date().toLocaleTimeString()}`);
+            }
 
-        if (data && data.length > 0) {
-            const record = data[0];
-            currentActivity.lastActivity = record.last_activity;
-            currentActivity.isActive = record.is_active;
-            
-            debugLog(`Initial data loaded:`);
-            debugLog(`- last_activity: ${record.last_activity}`);
-            debugLog(`- is_active: ${record.is_active}`);
-            debugLog(`- created_at: ${record.created_at}`);
-            
-            updateStatusDisplay();
-        } else {
-            debugLog('No initial data found in database');
-        }
-    } catch (err) {
-        debugLog(`Failed to load initial data: ${err.message}`);
-    }
-}
+            // Load initial activity data and refresh current data
+            async function loadInitialData() {
+                try {
+                    debugLog('Loading data from Supabase...');
+                    
+                    const { data, error } = await supabaseClient
+                        .from('activity_status')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (error) {
+                        debugLog(`Error loading data: ${error.message}`);
+                        return;
+                    }
+
+                    if (data && data.length > 0) {
+                        const record = data[0];
+                        const newActivity = record.last_activity;
+                        const newIsActive = record.is_active;
+                        
+                        // Check if this is actually new data
+                        if (newActivity !== currentActivity.lastActivity || newIsActive !== currentActivity.isActive) {
+                            currentActivity.lastActivity = newActivity;
+                            currentActivity.isActive = newIsActive;
+                            lastUpdateTime = new Date();
+                            
+                            debugLog(`Data updated from polling:`);
+                            debugLog(`- last_activity: ${record.last_activity}`);
+                            debugLog(`- is_active: ${record.is_active}`);
+                            debugLog(`- created_at: ${record.created_at}`);
+                            
+                            updateStatusDisplay();
+                        } else {
+                            debugLog('No new data from polling');
+                        }
+                    } else {
+                        debugLog('No data found in database');
+                    }
+                } catch (err) {
+                    debugLog(`Failed to load data: ${err.message}`);
+                }
+            }
 
             // Listen for real-time updates from Supabase
             function setupRealtimeListener() {
                 debugLog('Setting up real-time listener...');
                 
                 const channel = supabaseClient
-                    .channel('activity_monitor_channel')
+                    .channel('activity_monitor_channel_v2')
                     .on('postgres_changes', 
                         { 
                             event: '*', 
@@ -407,14 +467,24 @@ async function loadInitialData() {
                             debugLog(`Real-time update received: ${JSON.stringify(payload)}`);
                             
                             if (payload.new) {
-                                currentActivity.lastActivity = payload.new.last_activity;
-                                currentActivity.isActive = payload.new.is_active;
+                                const newActivity = payload.new.last_activity;
+                                const newIsActive = payload.new.is_active;
+                                
+                                // Update activity data
+                                currentActivity.lastActivity = newActivity;
+                                currentActivity.isActive = newIsActive;
+                                lastUpdateTime = new Date();
+                                
+                                debugLog(`Real-time data applied:`);
+                                debugLog(`- last_activity: ${newActivity}`);
+                                debugLog(`- is_active: ${newIsActive}`);
+                                
                                 updateStatusDisplay();
                             }
                         }
                     )
                     .subscribe((status) => {
-                        debugLog(`Subscription status: ${status}`);
+                        debugLog(`Real-time subscription status: ${status}`);
                         
                         const connectionDot = document.getElementById('connectionDot');
                         const connectionStatus = document.getElementById('connectionStatus');
@@ -423,14 +493,19 @@ async function loadInitialData() {
                             connectionDot.classList.remove('disconnected');
                             connectionStatus.textContent = 'Connected';
                             debugLog('Successfully connected to real-time updates');
-                            loadInitialData();
+                            loadInitialData(); // Load initial data after successful connection
                         } else if (status === 'CHANNEL_ERROR') {
                             connectionDot.classList.add('disconnected');
                             connectionStatus.textContent = 'Error';
                             debugLog('Real-time connection error');
+                        } else if (status === 'CLOSED') {
+                            connectionDot.classList.add('disconnected');
+                            connectionStatus.textContent = 'Disconnected';
+                            debugLog('Real-time connection closed');
                         } else {
                             connectionDot.classList.add('disconnected');
                             connectionStatus.textContent = status;
+                            debugLog(`Real-time status: ${status}`);
                         }
                     });
 
@@ -446,8 +521,19 @@ async function loadInitialData() {
                 // Update time every second
                 setInterval(updateTime, 1000);
                 
-                // Update status display every 30 seconds
+                // Update status display every 30 seconds (in case real-time fails)
                 setInterval(updateStatusDisplay, 30000);
+                
+                // Poll for new data every 10 seconds as backup (more frequent than before)
+                setInterval(loadInitialData, 10000);
+                
+                // Check for stale data every 5 seconds
+                setInterval(() => {
+                    if (lastUpdateTime && (new Date() - lastUpdateTime) > 60000) { // No updates for over 1 minute
+                        debugLog('Warning: No updates received in over 1 minute, forcing refresh');
+                        loadInitialData();
+                    }
+                }, 5000);
                 
                 debugLog('Activity monitor initialized successfully');
             }
