@@ -384,15 +384,55 @@
                 return `${minutes}m`;
             }
 
-            // Convert UTC timestamp to local time for display
-            function formatTimestampForDisplay(timestamp) {
-                if (!timestamp) return '--';
-                
-                const date = new Date(timestamp);
-                if (isNaN(date.getTime())) {
-                    debugLog(`Invalid timestamp for display: ${timestamp}`);
-                    return 'Invalid Date';
-                }
+           // Convert UTC timestamp to local time for display (with 4-hour correction)
+function formatTimestampForDisplay(timestamp) {
+    if (!timestamp) return '--';
+    
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+        debugLog(`Invalid timestamp for display: ${timestamp}`);
+        return 'Invalid Date';
+    }
+    
+    // Add 4 hours (4 * 60 * 60 * 1000 milliseconds) to correct timezone issue
+    const correctedDate = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+    
+    // Display in local timezone
+    return correctedDate.toLocaleTimeString();
+}
+
+// Format time difference with 4-hour correction
+function formatTimeDifference(timestamp) {
+    if (!timestamp) return '--';
+    
+    const now = new Date();
+    // Apply 4-hour correction to the activity timestamp
+    const activityDate = new Date(new Date(timestamp).getTime() + (4 * 60 * 60 * 1000));
+    
+    // Check if the date is valid
+    if (isNaN(activityDate.getTime())) {
+        debugLog(`Invalid timestamp received: ${timestamp}`);
+        return 'Invalid Date';
+    }
+    
+    const diff = Math.floor((now - activityDate) / 1000);
+    
+    debugLog(`Time difference calculation: now=${now.toISOString()}, activity=${activityDate.toISOString()}, diff=${diff} seconds`);
+    
+    if (diff < 0) return 'Future time detected';
+    if (diff < 60) return `${diff} seconds ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+}
+
+// Update current time display (also add 4-hour correction)
+function updateTime() {
+    const now = new Date();
+    // Add 4 hours to current time display as well
+    const correctedNow = new Date(now.getTime() + (4 * 60 * 60 * 1000));
+    document.getElementById('currentTime').textContent = correctedNow.toLocaleTimeString();
+}
                 
                 // Display in local timezone
                 return date.toLocaleTimeString();
