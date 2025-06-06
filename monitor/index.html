@@ -244,12 +244,12 @@
 
         <div class="info-grid">
             <div class="info-card card">
-                <h3>Last Activity</h3>
+                <h3>Last Update</h3>
                 <div class="info-value" id="lastActivity">--</div>
             </div>
 
             <div class="info-card card">
-                <h3>Time Since Activity</h3>
+                <h3>Time Since Update</h3>
                 <div class="info-value" id="timeSince">--</div>
             </div>
 
@@ -550,8 +550,8 @@
                 // Update time every second
                 setInterval(updateTime, 1000);
                 
-                // Update status display every 30 seconds (in case real-time fails)
-                setInterval(updateStatusDisplay, 30000);
+                // Update status display every second (in case real-time fails)
+                setInterval(updateStatusDisplay, 1000);
                 
                 // Poll for new data every 10 seconds as backup
                 setInterval(loadInitialData, 10000);
