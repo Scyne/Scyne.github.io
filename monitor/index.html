@@ -157,7 +157,7 @@
             margin-top: 20px;
             max-height: 200px;
             overflow-y: auto;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .debug-info.visible {
@@ -347,13 +347,25 @@
                 document.getElementById('currentTime').textContent = now.toLocaleTimeString();
             }
 
-            // Format time difference
+            // Format time difference with proper timezone handling
             function formatTimeDifference(timestamp) {
                 if (!timestamp) return '--';
                 
                 const now = new Date();
-                const diff = Math.floor((now - new Date(timestamp)) / 1000);
+                // Ensure proper date parsing - handle both ISO strings and date objects
+                const activityDate = new Date(timestamp);
                 
+                // Check if the date is valid
+                if (isNaN(activityDate.getTime())) {
+                    debugLog(`Invalid timestamp received: ${timestamp}`);
+                    return 'Invalid Date';
+                }
+                
+                const diff = Math.floor((now - activityDate) / 1000);
+                
+                debugLog(`Time difference calculation: now=${now.toISOString()}, activity=${activityDate.toISOString()}, diff=${diff} seconds`);
+                
+                if (diff < 0) return 'Future time detected';
                 if (diff < 60) return `${diff} seconds ago`;
                 if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
                 if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
@@ -372,6 +384,20 @@
                 return `${minutes}m`;
             }
 
+            // Convert UTC timestamp to local time for display
+            function formatTimestampForDisplay(timestamp) {
+                if (!timestamp) return '--';
+                
+                const date = new Date(timestamp);
+                if (isNaN(date.getTime())) {
+                    debugLog(`Invalid timestamp for display: ${timestamp}`);
+                    return 'Invalid Date';
+                }
+                
+                // Display in local timezone
+                return date.toLocaleTimeString();
+            }
+
             // Update activity status display
             function updateStatusDisplay() {
                 const statusText = document.getElementById('statusText');
@@ -384,7 +410,7 @@
                 // Use the database's is_active field as the primary source of truth
                 const isCurrentlyActive = currentActivity.isActive;
 
-                debugLog(`Database is_active: ${currentActivity.isActive}, Using status: ${isCurrentlyActive}`);
+                debugLog(`Database is_active: ${currentActivity.isActive}, last_activity: ${currentActivity.lastActivity}`);
 
                 // Update main status
                 statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
@@ -397,10 +423,8 @@
                     statusDot.classList.add('inactive');
                 }
 
-                // Update info cards
-                lastActivityEl.textContent = currentActivity.lastActivity ? 
-                    new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
-                
+                // Update info cards with proper timezone handling
+                lastActivityEl.textContent = formatTimestampForDisplay(currentActivity.lastActivity);
                 timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
                 sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
 
@@ -435,7 +459,8 @@
                             lastUpdateTime = new Date();
                             
                             debugLog(`Data updated from polling:`);
-                            debugLog(`- last_activity: ${record.last_activity}`);
+                            debugLog(`- last_activity: ${record.last_activity} (raw)`);
+                            debugLog(`- last_activity converted: ${formatTimestampForDisplay(record.last_activity)}`);
                             debugLog(`- is_active: ${record.is_active}`);
                             debugLog(`- created_at: ${record.created_at}`);
                             
@@ -456,7 +481,7 @@
                 debugLog('Setting up real-time listener...');
                 
                 const channel = supabaseClient
-                    .channel('activity_monitor_channel_v2')
+                    .channel('activity_monitor_channel_v3')
                     .on('postgres_changes', 
                         { 
                             event: '*', 
@@ -476,7 +501,8 @@
                                 lastUpdateTime = new Date();
                                 
                                 debugLog(`Real-time data applied:`);
-                                debugLog(`- last_activity: ${newActivity}`);
+                                debugLog(`- last_activity: ${newActivity} (raw)`);
+                                debugLog(`- last_activity converted: ${formatTimestampForDisplay(newActivity)}`);
                                 debugLog(`- is_active: ${newIsActive}`);
                                 
                                 updateStatusDisplay();
@@ -493,7 +519,7 @@
                             connectionDot.classList.remove('disconnected');
                             connectionStatus.textContent = 'Connected';
                             debugLog('Successfully connected to real-time updates');
-                            loadInitialData(); // Load initial data after successful connection
+                            loadInitialData();
                         } else if (status === 'CHANNEL_ERROR') {
                             connectionDot.classList.add('disconnected');
                             connectionStatus.textContent = 'Error';
@@ -524,12 +550,12 @@
                 // Update status display every 30 seconds (in case real-time fails)
                 setInterval(updateStatusDisplay, 30000);
                 
-                // Poll for new data every 10 seconds as backup (more frequent than before)
+                // Poll for new data every 10 seconds as backup
                 setInterval(loadInitialData, 10000);
                 
                 // Check for stale data every 5 seconds
                 setInterval(() => {
-                    if (lastUpdateTime && (new Date() - lastUpdateTime) > 60000) { // No updates for over 1 minute
+                    if (lastUpdateTime && (new Date() - lastUpdateTime) > 60000) {
                         debugLog('Warning: No updates received in over 1 minute, forcing refresh');
                         loadInitialData();
                     }
