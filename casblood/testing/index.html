@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cas' Blood Glucose</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .glucose-display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glucose-number {
+            font-size: clamp(80px, 15vw, 150px);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .trend-arrow {
+            font-size: clamp(60px, 12vw, 100px);
+            color: #FFD700;
+        }
+
+        .timestamp {
+            font-size: clamp(14px, 3vw, 18px);
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            animation: flash 1s infinite;
+        }
+
+        .alert.high {
+            background: rgba(255, 165, 0, 0.8);
+            color: white;
+        }
+
+        .alert.low {
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+        }
+
+        @keyframes flash {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.5; }
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+        }
+
+        .chart-title {
+            font-size: clamp(16px, 3.5vw, 20px);
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        #glucoseChart {
+            height: 200px !important;
+            width: 100% !important;
+        }
+
+        .loading {
+            opacity: 0.6;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: clamp(12px, 2.5vw, 14px);
+            opacity: 0.8;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .glucose-display {
+                padding: 30px 20px;
+                margin-bottom: 20px;
+            }
+
+            .chart-container {
+                padding: 15px;
+            }
+
+            #glucoseChart {
+                height: 180px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glucose-display {
+                padding: 25px 15px;
+            }
+
+            #glucoseChart {
+                height: 160px !important;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+class BloodGlucoseFavicon {
+    constructor() {
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = 32;
+        this.canvas.height = 32;
+        this.currentGlucose = null;
+        this.faviconLink = null;
+        this.init();
+    }
+    
+    init() {
+        this.faviconLink = document.querySelector('link[rel="icon"]') || 
+                          document.querySelector('link[rel="shortcut icon"]');
+        
+        if (!this.faviconLink) {
+            this.faviconLink = document.createElement('link');
+            this.faviconLink.rel = 'icon';
+            this.faviconLink.type = 'image/png';
+            document.head.appendChild(this.faviconLink);
+        }
+        
+        this.updateFavicon(null);
+        this.startMonitoring();
+    }
+    
+    getGlucoseStatus(glucose) {
+        if (!glucose || glucose === null || glucose === '---') return 'unknown';
+        const value = parseInt(glucose);
+        
+        // 5-level system using your existing colors
+        if (value < 55) return 'very-low';      // Dark red
+        if (value < 75) return 'low';           // Red  
+        if (value <= 180) return 'normal';      // Green
+        if (value <= 250) return 'high';        // Orange
+        return 'very-high';                     // Dark red
+    }
+    
+    getStatusColor(status) {
+        // Using exact colors from your source code
+        switch (status) {
+            case 'very-low':  return '#d32f2f';  // Your critical_secondary
+            case 'low':       return '#f44336';  // Your critical_primary
+            case 'normal':    return '#4CAF50';  // Your normal_primary
+            case 'high':      return '#FF9800';  // Your high_primary
+            case 'very-high': return '#d32f2f';  // Your critical_secondary
+            default:          return '#666666';  // Gray for unknown
+        }
+    }
+    
+    drawFavicon(backgroundColor) {
+        const size = 32;
+        const ctx = this.ctx;
+        
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, size, size);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 20px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🩸', size / 2, size / 2);
+        
+        return this.canvas.toDataURL('image/png');
+    }
+    
+    updateFavicon(glucose) {
+        const status = this.getGlucoseStatus(glucose);
+        const backgroundColor = this.getStatusColor(status);
+        const faviconDataUrl = this.drawFavicon(backgroundColor);
+        this.faviconLink.href = faviconDataUrl;
+        this.currentGlucose = glucose;
+    }
+    
+    getCurrentGlucoseValue() {
+        const glucoseValueElement = document.getElementById('glucoseValue');
+        if (glucoseValueElement) {
+            const value = glucoseValueElement.textContent.trim();
+            if (value && value !== '---' && !isNaN(parseInt(value))) {
+                return parseInt(value);
+            }
+        }
+        return null;
+    }
+    
+    startMonitoring() {
+        setInterval(() => {
+            const newGlucose = this.getCurrentGlucoseValue();
+            if (newGlucose !== this.currentGlucose) {
+                this.updateFavicon(newGlucose);
+            }
+        }, 2000);
+        
+        if (window.MutationObserver) {
+            const observer = new MutationObserver(() => {
+                const newGlucose = this.getCurrentGlucoseValue();
+                if (newGlucose !== this.currentGlucose) {
+                    this.updateFavicon(newGlucose);
+                }
+            });
+            
+            const glucoseDisplay = document.getElementById('glucoseDisplay');
+            if (glucoseDisplay) {
+                observer.observe(glucoseDisplay, {
+                    childList: true, subtree: true, characterData: true
+                });
+            }
+        }
+    }
+}
+
+// === NEW NOTIFICATION AND TAB FLASHING FUNCTIONALITY ===
+class GlucoseNotificationManager {
+    constructor() {
+        this.originalTitle = document.title;
+        this.isFlashing = false;
+        this.flashInterval = null;
+        this.notificationPermission = null;
+        this.lastNotificationValue = null;
+        this.lastNotificationTime = 0;
+        this.init();
+    }
+    
+    async init() {
+        // Request notification permission on first load
+        await this.requestNotificationPermission();
+    }
+    
+    async requestNotificationPermission() {
+        try {
+            if ('Notification' in window) {
+                this.notificationPermission = await Notification.requestPermission();
+                console.log('Notification permission:', this.notificationPermission);
+            } else {
+                console.log('Notifications not supported in this browser');
+            }
+        } catch (error) {
+            console.error('Error requesting notification permission:', error);
+        }
+    }
+    
+    showNotification(glucoseValue, status) {
+        // Only show notifications for critical levels (very-low, very-high)
+        if (status !== 'very-low' && status !== 'very-high') return;
+        
+        // Prevent duplicate notifications (within 5 minutes)
+        const currentTime = Date.now();
+        if (this.lastNotificationValue === glucoseValue && 
+            currentTime - this.lastNotificationTime < 300000) {
+            return;
+        }
+        
+        if (this.notificationPermission === 'granted') {
+            try {
+                const title = status === 'very-low' ? 
+                    '🚨 CRITICAL: Blood Glucose Very Low' : 
+                    '🚨 CRITICAL: Blood Glucose Very High';
+                
+                const message = `Current reading: ${glucoseValue} mg/dL\nImmediate attention required!`;
+                
+                const notification = new Notification(title, {
+                    body: message,
+                    icon: this.createNotificationIcon(status),
+                    tag: 'glucose-alert', // Replace previous notifications
+                    requireInteraction: true, // Keep notification visible until dismissed
+                    silent: false // Allow sound
+                });
+                
+                // Auto-close after 10 seconds if user doesn't interact
+                setTimeout(() => {
+                    notification.close();
+                }, 10000);
+                
+                // Track this notification
+                this.lastNotificationValue = glucoseValue;
+                this.lastNotificationTime = currentTime;
+                
+                console.log(`Desktop notification sent for ${status} glucose: ${glucoseValue}`);
+                
+            } catch (error) {
+                console.error('Error showing notification:', error);
+            }
+        }
+    }
+    
+    createNotificationIcon(status) {
+        // Create a simple data URL icon for the notification
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        
+        // Background color based on status
+        ctx.fillStyle = status === 'very-low' ? '#d32f2f' : '#d32f2f';
+        ctx.fillRect(0, 0, 64, 64);
+        
+        // Add warning symbol
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 40px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⚠', 32, 32);
+        
+        return canvas.toDataURL();
+    }
+    
+    startTabFlashing(glucoseValue, status) {
+        // Flash for high and low levels (not just critical)
+        if (status !== 'high' && status !== 'low' && status !== 'very-high' && status !== 'very-low') {
+            this.stopTabFlashing();
+            return;
+        }
+        
+        if (this.isFlashing) return; // Already flashing
+        
+        this.isFlashing = true;
+        let flashState = false;
+        
+        const flashMessage = this.getFlashMessage(glucoseValue, status);
+        
+        this.flashInterval = setInterval(() => {
+            if (flashState) {
+                document.title = this.originalTitle;
+            } else {
+                document.title = flashMessage;
+            }
+            flashState = !flashState;
+        }, 1000); // Flash every second
+        
+        console.log(`Tab flashing started for ${status} glucose: ${glucoseValue}`);
+    }
+    
+    stopTabFlashing() {
+        if (this.flashInterval) {
+            clearInterval(this.flashInterval);
+            this.flashInterval = null;
+        }
+        
+        if (this.isFlashing) {
+            document.title = this.originalTitle;
+            this.isFlashing = false;
+            console.log('Tab flashing stopped');
+        }
+    }
+    
+    getFlashMessage(glucoseValue, status) {
+        switch (status) {
+            case 'very-low':
+                return `🚨 CRITICAL LOW: ${glucoseValue}`;
+            case 'low':
+                return `⚠ LOW: ${glucoseValue}`;
+            case 'high':
+                return `⚠ HIGH: ${glucoseValue}`;
+            case 'very-high':
+                return `🚨 CRITICAL HIGH: ${glucoseValue}`;
+            default:
+                return `⚠ ALERT: ${glucoseValue}`;
+        }
+    }
+    
+    handleGlucoseUpdate(glucoseValue) {
+        if (!glucoseValue || glucoseValue === '---' || isNaN(parseInt(glucoseValue))) {
+            this.stopTabFlashing();
+            return;
+        }
+        
+        const value = parseInt(glucoseValue);
+        let status;
+        
+        // Determine status using same logic as existing code
+        if (value < 55) status = 'very-low';
+        else if (value < 75) status = 'low';
+        else if (value <= 180) status = 'normal';
+        else if (value <= 250) status = 'high';
+        else status = 'very-high';
+        
+        // Handle notifications (critical levels only)
+        this.showNotification(value, status);
+        
+        // Handle tab flashing (high and low levels)
+        if (status === 'normal') {
+            this.stopTabFlashing();
+        } else {
+            this.startTabFlashing(value, status);
+        }
+    }
+}
+
+// Initialize notification manager
+let glucoseNotificationManager;
+
+// Initialize when DOM is ready
+function initFavicon() {
+    if (!window.bloodGlucoseFavicon) {
+        window.bloodGlucoseFavicon = new BloodGlucoseFavicon();
+    }
+}
+
+function initNotifications() {
+    if (!window.glucoseNotificationManager) {
+        window.glucoseNotificationManager = new GlucoseNotificationManager();
+        glucoseNotificationManager = window.glucoseNotificationManager;
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initFavicon();
+        initNotifications();
+    });
+} else {
+    setTimeout(() => {
+        initFavicon();
+        initNotifications();
+    }, 100);
+}
+
+setTimeout(() => {
+    initFavicon();
+    initNotifications();
+}, 1000);
+</script>
+</head>
+<body>
+    <div class="status" id="status">🔄 Connecting...</div>
+
+    <div class="container">
+        <div class="glucose-display" id="glucoseDisplay">
+            <div class="glucose-number" id="glucoseNumber">
+                <span id="glucoseValue">---</span>
+                <span class="trend-arrow" id="trendArrow"></span>
+            </div>
+            <div class="timestamp" id="timestamp">Initializing...</div>
+            <div class="alert high" id="highAlert" style="display: none;">HIGH</div>
+            <div class="alert low" id="lowAlert" style="display: none;">LOW</div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">📈 12-Hour History</div>
+            <canvas id="glucoseChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart.js
+        const ctx = document.getElementById('glucoseChart').getContext('2d');
+        const glucoseChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Blood Glucose',
+                    data: [],
+                    borderColor: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    tension: 0.4,
+                    pointRadius: 2,
+                    pointHoverRadius: 6,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                parsing: false,
+                normalized: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'hour',
+                            displayFormats: {
+                                hour: 'ha'
+                            },
+                            tooltipFormat: 'MMM d, h:mm a'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            maxTicksLimit: 6
+                        }
+                    },
+                    y: {
+                        min: 40,
+                        max: 350,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            stepSize: 50
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { 
+                        display: false 
+                    },
+                    decimation: {
+                        enabled: true,
+                        algorithm: 'min-max',
+                        samples: 200
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+
+        // Parse LibreLink timestamp format: "6/3/2025 9:15:02 PM"
+        function parseLibreLinkTimestamp(timestamp) {
+            try {
+                // Handle the MM/DD/YYYY HH:MM:SS AM/PM format
+                const match = timestamp.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)/);
+                if (match) {
+                    const [, month, day, year, hours, minutes, seconds, period] = match;
+                    let hour24 = parseInt(hours);
+
+                    if (period === 'PM' && hour24 !== 12) {
+                        hour24 += 12;
+                    } else if (period === 'AM' && hour24 === 12) {
+                        hour24 = 0;
+                    }
+
+                    return new Date(year, month - 1, day, hour24, minutes, seconds);
+                }
+
+                // Fallback to standard date parsing
+                return new Date(timestamp);
+            } catch (error) {
+                console.error('Error parsing timestamp:', timestamp, error);
+                return new Date();
+            }
+        }
+
+        // Update display with glucose data
+        function updateDisplay(data) {
+            try {
+                document.getElementById('status').textContent = '🟢 Connected';
+                document.getElementById('glucoseValue').textContent = data.value || '---';
+                document.getElementById('trendArrow').textContent = data.trend || '';
+
+                // === NEW: Trigger notifications and tab flashing ===
+                if (window.glucoseNotificationManager && data.value) {
+                    glucoseNotificationManager.handleGlucoseUpdate(data.value);
+                }
+
+                if (data.timestamp) {
+                    const time = new Date(data.timestamp);
+                    document.getElementById('timestamp').textContent = 
+                        `Last updated: ${time.toLocaleTimeString()}`;
+                }
+
+                // Update background color based on glucose value
+                const body = document.body;
+                const value = parseInt(data.value);
+
+                if (value >= 75 && value <= 180) {
+                    body.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                } else if (value > 180 && value <= 300) {
+                    body.style.background = 'linear-gradient(135deg, #FF9800 0%, #f57c00 100%)';
+                } else {
+                    body.style.background = 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)';
+                }
+
+                // Show/hide alerts
+                const highAlert = document.getElementById('highAlert');
+                const lowAlert = document.getElementById('lowAlert');
+
+                if (value > 180) {
+                    highAlert.style.display = 'block';
+                    lowAlert.style.display = 'none';
+                } else if (value < 75) {
+                    lowAlert.style.display = 'block';
+                    highAlert.style.display = 'none';
+                } else {
+                    highAlert.style.display = 'none';
+                    lowAlert.style.display = 'none';
+                }
+
+                // Update chart with historical data
+                if (data.history && data.history.length > 0) {
+                    console.log('Processing', data.history.length, 'history points');
+
+                    const chartData = data.history.map(entry => {
+                        const parsedDate = parseLibreLinkTimestamp(entry.timestamp);
+                        return {
+                            x: parsedDate.getTime(),
+                            y: entry.value
+                        };
+                    }).filter(point => point.y > 0 && point.y < 500); // Filter invalid readings
+
+                    // Sort by timestamp
+                    chartData.sort((a, b) => a.x - b.x);
+
+                    console.log('Chart data prepared:', chartData.length, 'points');
+
+                    // Update chart
+                    glucoseChart.data.datasets[0].data = chartData;
+
+                    // Set time range to last 12 hours
+                    const now = Date.now();
+                    const twelveHoursAgo = now - (12 * 60 * 60 * 1000);
+
+                    glucoseChart.options.scales.x.min = twelveHoursAgo;
+                    glucoseChart.options.scales.x.max = now;
+
+                    glucoseChart.update('none');
+                    console.log('Chart updated');
+                } else {
+                    console.log('No history data available');
+                }
+
+                // Remove loading state
+                document.getElementById('glucoseDisplay').classList.remove('loading');
+
+            } catch (error) {
+                console.error('Error updating display:', error);
+                showError('Display update failed: ' + error.message);
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            console.error('Error:', message);
+            document.getElementById('status').textContent = '🔴 Error';
+
+            // Create or update error display
+            let errorDiv = document.getElementById('errorMessage');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'errorMessage';
+                errorDiv.className = 'error-message';
+                document.querySelector('.container').appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Fetch glucose data
+        async function fetchGlucoseData() {
+            try {
+                document.getElementById('status').textContent = '🔄 Updating...';
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+                const response = await fetch('https://poplock.scyne.com:7743/api/glucose', {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Received data:', data);
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                updateDisplay(data);
+
+                // Hide any existing error messages
+                const errorDiv = document.getElementById('errorMessage');
+                if (errorDiv) {
+                    errorDiv.style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+
+                if (error.name === 'AbortError') {
+                    showError('Request timeout - please check your connection');
+                } else if (error.message.includes('Failed to fetch')) {
+                    showError('Connection failed - check if server is running');
+                } else {
+                    showError(error.message);
+                }
+
+                document.getElementById('status').textContent = '🔴 Connection Error';
+            }
+        }
+
+        // Auto-refresh and initialization
+        let refreshInterval;
+
+        function startAutoRefresh() {
+            // Immediate fetch
+            fetchGlucoseData();
+
+            // Set up periodic refresh (every 5 minutes)
+            refreshInterval = setInterval(fetchGlucoseData, 5 * 60 * 1000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        // Page visibility handling for battery optimization
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+            }
+        });
+
+        // Start monitoring when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, starting glucose monitoring...');
+            startAutoRefresh();
+        });
+
+        // Handle beforeunload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+            // === NEW: Stop tab flashing on page unload ===
+            if (window.glucoseNotificationManager) {
+                glucoseNotificationManager.stopTabFlashing();
+            }
+        });
+
+        // Add loading state initially
+        document.getElementById('glucoseDisplay').classList.add('loading');
+    </script>
+</body>
+</html>
