@@ -147,6 +147,16 @@
             background: #ff0000;
         }
 
+        .debug-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--grayish-blue);
+            margin-top: 20px;
+        }
+
         @keyframes pulse {
             0% {
                 box-shadow: 0 0 0 0 rgba(4, 0, 245, 0.7);
@@ -238,160 +248,211 @@
                 <div class="info-value" id="sessionDuration">--</div>
             </div>
         </div>
+
+        <div class="card debug-info" id="debugInfo">
+            <h3>Debug Information</h3>
+            <div id="debugLog">Initializing...</div>
+        </div>
     </div>
 
     <script>
-        // Supabase configuration with basic obfuscation
-        const supabaseUrl = 'https://vmiggibnhcnwjmlavyqz.supabase.co';
-        
-        // Simple obfuscation - Base64 encoded and reversed
-        const obfuscatedKey = 'UXZKb1E5Tk9UOXdrZWlDQ2xqWlhSLTZDWkZYRDZkOXc4dUtpaFpYOUNGUEZBWDhsXzZNelF6ZVZZRUxOanRhYkRUNFNUX1JIUDZaU2pxWWNhN3NGSmo3R181TVRjM2R6T042VnNONUR4a2pPbFIyTnpaMmJ6VkRZejJ6Y3pNalEySDVJNFZ6RTVWek1UT3pjelV6WXpNamN6QWpPMDNEVDBzelB6TWpRMkgxSURNejF6Y3pBanEwM0Q=';
-        const supabaseKey = atob(obfuscatedKey.split('').reverse().join(''));
-
-        // Initialize Supabase client
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        let currentActivity = {
-            isActive: false,
-            lastActivity: null,
-            sessionStart: new Date()
-        };
-
-        // Update current time
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+        // Debug logging function
+        function debugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const debugElement = document.getElementById('debugLog');
+            debugElement.innerHTML += `<br>[${timestamp}] ${message}`;
+            console.log(`[${timestamp}] ${message}`);
         }
 
-        // Format time difference
-        function formatTimeDifference(timestamp) {
-            if (!timestamp) return '--';
-            
-            const now = new Date();
-            const diff = Math.floor((now - new Date(timestamp)) / 1000);
-            
-            if (diff < 60) return `${diff} seconds ago`;
-            if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
-            return `${Math.floor(diff / 86400)} days ago`;
-        }
-
-        // Format duration
-        function formatDuration(startTime) {
-            const now = new Date();
-            const diff = Math.floor((now - startTime) / 1000);
-            
-            const hours = Math.floor(diff / 3600);
-            const minutes = Math.floor((diff % 3600) / 60);
-            
-            if (hours > 0) return `${hours}h ${minutes}m`;
-            return `${minutes}m`;
-        }
-
-        // Update activity status display
-        function updateStatusDisplay() {
-            const statusText = document.getElementById('statusText');
-            const statusCircle = document.getElementById('statusCircle');
-            const statusDot = document.getElementById('statusDot');
-            const lastActivityEl = document.getElementById('lastActivity');
-            const timeSinceEl = document.getElementById('timeSince');
-            const sessionDurationEl = document.getElementById('sessionDuration');
-
-            // Determine if user is currently active (within last 5 minutes)
-            const isCurrentlyActive = currentActivity.lastActivity && 
-                (new Date() - new Date(currentActivity.lastActivity)) < 300000; // 5 minutes
-
-            // Update main status
-            statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
-            
-            if (isCurrentlyActive) {
-                statusCircle.classList.remove('inactive');
-                statusDot.classList.remove('inactive');
-            } else {
-                statusCircle.classList.add('inactive');
-                statusDot.classList.add('inactive');
+        // Wait for Supabase to load
+        function initializeApp() {
+            if (typeof window.supabase === 'undefined') {
+                debugLog('Waiting for Supabase to load...');
+                setTimeout(initializeApp, 100);
+                return;
             }
 
-            // Update info cards
-            lastActivityEl.textContent = currentActivity.lastActivity ? 
-                new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
-            
-            timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
-            sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
-        }
+            debugLog('Supabase CDN loaded successfully');
 
-        // Listen for real-time updates from Supabase
-        function setupRealtimeListener() {
-            const channel = supabase
-                .channel('activity_monitor')
-                .on('postgres_changes', 
-                    { 
-                        event: '*', 
-                        schema: 'public', 
-                        table: 'activity_status' 
-                    }, 
-                    (payload) => {
-                        console.log('Real-time update:', payload);
-                        if (payload.new) {
-                            currentActivity.lastActivity = payload.new.last_activity;
-                            currentActivity.isActive = payload.new.is_active;
-                            updateStatusDisplay();
-                        }
-                    }
-                )
-                .subscribe((status) => {
-                    console.log('Subscription status:', status);
-                    const connectionDot = document.getElementById('connectionDot');
-                    const connectionStatus = document.getElementById('connectionStatus');
+            // Supabase configuration
+            const supabaseUrl = 'https://vmiggibnhcnwjmlavyqz.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZtaWdnaWJuaGNud2ptbGF2eXF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkxNTY3NTUsImV4cCI6MjA2NDczMjc1NX0.l8XAFPC6ziKhwu8D6RXZ-CVABjlCCew4jTON9GoWJvQ';
+
+            debugLog('Creating Supabase client...');
+
+            // Initialize Supabase client using the global supabase object
+            const { createClient } = window.supabase;
+            const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+            debugLog('Supabase client created successfully');
+
+            let currentActivity = {
+                isActive: false,
+                lastActivity: null,
+                sessionStart: new Date()
+            };
+
+            // Update current time
+            function updateTime() {
+                const now = new Date();
+                document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+            }
+
+            // Format time difference
+            function formatTimeDifference(timestamp) {
+                if (!timestamp) return '--';
+                
+                const now = new Date();
+                const diff = Math.floor((now - new Date(timestamp)) / 1000);
+                
+                if (diff < 60) return `${diff} seconds ago`;
+                if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+                if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+                return `${Math.floor(diff / 86400)} days ago`;
+            }
+
+            // Format duration
+            function formatDuration(startTime) {
+                const now = new Date();
+                const diff = Math.floor((now - startTime) / 1000);
+                
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                
+                if (hours > 0) return `${hours}h ${minutes}m`;
+                return `${minutes}m`;
+            }
+
+            // Update activity status display
+            function updateStatusDisplay() {
+                const statusText = document.getElementById('statusText');
+                const statusCircle = document.getElementById('statusCircle');
+                const statusDot = document.getElementById('statusDot');
+                const lastActivityEl = document.getElementById('lastActivity');
+                const timeSinceEl = document.getElementById('timeSince');
+                const sessionDurationEl = document.getElementById('sessionDuration');
+
+                // Determine if user is currently active (within last 5 minutes)
+                const isCurrentlyActive = currentActivity.lastActivity && 
+                    (new Date() - new Date(currentActivity.lastActivity)) < 300000; // 5 minutes
+
+                // Update main status
+                statusText.textContent = isCurrentlyActive ? 'Active' : 'Inactive';
+                
+                if (isCurrentlyActive) {
+                    statusCircle.classList.remove('inactive');
+                    statusDot.classList.remove('inactive');
+                } else {
+                    statusCircle.classList.add('inactive');
+                    statusDot.classList.add('inactive');
+                }
+
+                // Update info cards
+                lastActivityEl.textContent = currentActivity.lastActivity ? 
+                    new Date(currentActivity.lastActivity).toLocaleTimeString() : '--';
+                
+                timeSinceEl.textContent = formatTimeDifference(currentActivity.lastActivity);
+                sessionDurationEl.textContent = formatDuration(currentActivity.sessionStart);
+
+                debugLog(`Status updated: ${isCurrentlyActive ? 'Active' : 'Inactive'}`);
+            }
+
+            // Load initial activity data
+            async function loadInitialData() {
+                try {
+                    debugLog('Loading initial data from Supabase...');
                     
-                    if (status === 'SUBSCRIBED') {
-                        connectionDot.classList.remove('disconnected');
-                        connectionStatus.textContent = 'Connected';
-                        loadInitialData();
-                    } else {
-                        connectionDot.classList.add('disconnected');
-                        connectionStatus.textContent = 'Disconnected';
+                    const { data, error } = await supabaseClient
+                        .from('activity_status')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (error) {
+                        debugLog(`Error loading initial data: ${error.message}`);
+                        return;
                     }
-                });
-        }
 
-        // Load initial activity data
-        async function loadInitialData() {
-            try {
-                const { data, error } = await supabase
-                    .from('activity_status')
-                    .select('*')
-                    .single();
-
-                if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-                    console.error('Error loading initial data:', error);
-                    return;
+                    if (data && data.length > 0) {
+                        currentActivity.lastActivity = data[0].last_activity;
+                        currentActivity.isActive = data[0].is_active;
+                        debugLog(`Initial data loaded: ${JSON.stringify(data[0])}`);
+                        updateStatusDisplay();
+                    } else {
+                        debugLog('No initial data found in database');
+                    }
+                } catch (err) {
+                    debugLog(`Failed to load initial data: ${err.message}`);
                 }
-
-                if (data) {
-                    currentActivity.lastActivity = data.last_activity;
-                    currentActivity.isActive = data.is_active;
-                    updateStatusDisplay();
-                }
-            } catch (err) {
-                console.error('Failed to load initial data:', err);
             }
+
+            // Listen for real-time updates from Supabase
+            function setupRealtimeListener() {
+                debugLog('Setting up real-time listener...');
+                
+                const channel = supabaseClient
+                    .channel('activity_monitor_channel')
+                    .on('postgres_changes', 
+                        { 
+                            event: '*', 
+                            schema: 'public', 
+                            table: 'activity_status' 
+                        }, 
+                        (payload) => {
+                            debugLog(`Real-time update received: ${JSON.stringify(payload)}`);
+                            
+                            if (payload.new) {
+                                currentActivity.lastActivity = payload.new.last_activity;
+                                currentActivity.isActive = payload.new.is_active;
+                                updateStatusDisplay();
+                            }
+                        }
+                    )
+                    .subscribe((status) => {
+                        debugLog(`Subscription status: ${status}`);
+                        
+                        const connectionDot = document.getElementById('connectionDot');
+                        const connectionStatus = document.getElementById('connectionStatus');
+                        
+                        if (status === 'SUBSCRIBED') {
+                            connectionDot.classList.remove('disconnected');
+                            connectionStatus.textContent = 'Connected';
+                            debugLog('Successfully connected to real-time updates');
+                            loadInitialData();
+                        } else if (status === 'CHANNEL_ERROR') {
+                            connectionDot.classList.add('disconnected');
+                            connectionStatus.textContent = 'Error';
+                            debugLog('Real-time connection error');
+                        } else {
+                            connectionDot.classList.add('disconnected');
+                            connectionStatus.textContent = status;
+                        }
+                    });
+
+                return channel;
+            }
+
+            // Initialize the application
+            function init() {
+                debugLog('Initializing activity monitor...');
+                updateTime();
+                setupRealtimeListener();
+                
+                // Update time every second
+                setInterval(updateTime, 1000);
+                
+                // Update status display every 30 seconds
+                setInterval(updateStatusDisplay, 30000);
+                
+                debugLog('Activity monitor initialized successfully');
+            }
+
+            // Start the application
+            init();
         }
 
-        // Initialize the application
-        function init() {
-            updateTime();
-            setupRealtimeListener();
-            
-            // Update time every second
-            setInterval(updateTime, 1000);
-            
-            // Update status display every 30 seconds
-            setInterval(updateStatusDisplay, 30000);
-        }
-
-        // Start the application
-        init();
+        // Start initialization when page loads
+        initializeApp();
     </script>
 </body>
 </html>
