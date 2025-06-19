@@ -1,17 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>✨ Sailorspoooky's Burp Counter ✨</title>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="robots" content="index,follow"/>
-  <meta name="generator" content="GrapesJS Studio"/>
-  <link rel="stylesheet" href="style.css"/>
-  <link rel="stylesheet" href="./style.css">
-  </head>
-  <body id="i7qf"><div class="magical-bg"><div class="stars"></div><div class="moon"></div></div><div class="container"><header class="header"><h1 class="title"><span class="moon-icon" id="iqr7y">🌙</span>
-        Sailorspoooky's Burp Counter
-        <span class="star-icon" id="i5a8k">⭐</span></h1><div id="connectionStatus" class="connection-status"><span class="status-dot"></span><span class="status-text" id="infqc">Connecting...</span></div></header><main class="main-content" id="ih63w"><!-- Current Count Display --><div class="count-display card"><div class="sparkles"></div><h2 class="count-label">Current Burp Count</h2><div id="countNumber" class="count-number">0</div><div class="count-glow"></div></div><!-- Main Controls --><div class="controls-section"><button type="button" id="burpButton" class="btn btn--burp"><span class="btn-text">BURP!</span><div class="btn-particles"></div></button><div class="control-group"><div class="manual-control card"><h3>Manual Set Count</h3><div class="flex gap-8"><input type="number" id="manualCount" placeholder="Enter count" min="0" class="form-control"/><button type="button" id="setCountButton" class="btn btn--secondary">Set</button></div></div><div class="reset-control card" id="iay2t"><h3>Reset Counter</h3><button type="button" id="resetButton" class="btn btn--outline btn--danger">
-                            Reset to 0
-                        </button></div></div></div><!-- Statistics Panel --><div class="stats-panel card"><h3>✨ Session Statistics ✨</h3><div class="stats-grid"><div class="stat-item"><span class="stat-label">Session Burps</span><span id="sessionBurps" class="stat-value">0</span></div><div class="stat-item"><span class="stat-label">Time Elapsed</span><span id="timeElapsed" class="stat-value">00:00:00</span></div><div class="stat-item"><span class="stat-label">Burps/Hour</span><span id="burpsPerHour" class="stat-value">0</span></div><div class="stat-item"><span class="stat-label">Last Burp</span><span id="lastBurp" class="stat-value">Never</span></div></div></div><!-- Theme Controls --><div class="theme-controls card"><h3>🎨 Theme Options</h3><div class="theme-options"><label class="theme-option"><input type="radio" name="theme" value="light" checked/><span class="theme-preview theme-light"></span><span>Dreamy Light</span></label><label class="theme-option"><input type="radio" name="theme" value="dark"/><span class="theme-preview theme-dark"></span><span>Moonlit Dark</span></label></div></div></main><!-- Confirmation Modal --><div id="resetModal" class="modal"><div class="modal-content card"><h3>🌙 Confirm Reset</h3><p>Are you sure you want to reset the burp counter to 0?</p><div class="modal-actions"><button type="button" id="cancelReset" class="btn btn--outline">Cancel</button><button type="button" id="confirmReset" class="btn btn--danger">Reset Counter</button></div></div></div><!-- Loading Overlay --><div id="loadingOverlay" class="loading-overlay"><div class="loading-spinner"><div class="spinner-moon">🌙</div><div class="loading-text">Connecting to the magical realm...</div></div></div></div><script src="app.js"></script></body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌙 Sailorspoooky's Burp Counter Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Additional control panel specific styles */
+        body {
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--soft-blue) 50%, var(--pale-yellow) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .magical-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(241, 183, 209, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(128, 179, 214, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(247, 230, 161, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .control-panel {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .title {
+            text-align: center;
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--deep-purple);
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            margin-bottom: var(--space-8);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: var(--font-size-lg);
+            color: var(--deep-purple);
+            margin-bottom: var(--space-24);
+            opacity: 0.8;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-8);
+            margin-bottom: var(--space-24);
+            padding: var(--space-12);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius-full);
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--soft-blue);
+            transition: all 0.3s ease;
+        }
+
+        .count-display {
+            text-align: center;
+            margin-bottom: var(--space-32);
+            padding: var(--space-24);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .count-number {
+            font-size: 72px;
+            font-weight: var(--font-weight-bold);
+            color: var(--deep-purple);
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            line-height: 1;
+        }
+
+        .count-label {
+            font-size: var(--font-size-lg);
+            color: var(--deep-purple);
+            margin-bottom: var(--space-16);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .burp-button {
+            width: 100%;
+            padding: var(--space-20);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            background: linear-gradient(135deg, var(--coral-accent) 0%, var(--primary-pink) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 139, 66, 0.4);
+            margin-bottom: var(--space-24);
+        }
+
+        .burp-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 139, 66, 0.6);
+        }
+
+        .burp-button:active {
+            transform: translateY(0);
+        }
+
+        .controls {
+            display: grid;
+            gap: var(--space-16);
+            margin-bottom: var(--space-24);
+        }
+
+        .control-group {
+            display: flex;
+            gap: var(--space-8);
+            align-items: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-16);
+            margin-top: var(--space-24);
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.8);
+            padding: var(--space-16);
+            border-radius: var(--radius-base);
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-value {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--deep-purple);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--deep-purple);
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(76, 61, 143, 0.9);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner-moon {
+            font-size: 48px;
+            animation: moonSpin 2s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: var(--space-16);
+            font-size: var(--font-size-lg);
+        }
+
+        @keyframes moonSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--space-12);
+            justify-content: center;
+            margin-top: var(--space-24);
+        }
+
+        .btn--danger {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+        }
+
+        .btn--danger:hover {
+            background: linear-gradient(135deg, #ff3742 0%, #ff2f3a 100%);
+        }
+
+        /* Connected status styles */
+        .connection-status.connected .status-dot {
+            background: var(--pale-yellow);
+            box-shadow: 0 0 10px var(--pale-yellow);
+        }
+
+        .connection-status.error .status-dot {
+            background: var(--coral-accent);
+            box-shadow: 0 0 10px var(--coral-accent);
+            animation: errorPulse 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Magical background elements -->
+    <div class="magical-bg"></div>
+    <div class="stars">
+        <div class="star star-1" style="position: fixed; top: 20%; left: 10%; font-size: 16px; color: var(--pale-yellow); animation: starFloat 4s ease-in-out infinite;">✦</div>
+        <div class="star star-2" style="position: fixed; top: 70%; left: 20%; font-size: 12px; color: var(--primary-pink); animation: starFloat 4s ease-in-out infinite 1s;">✧</div>
+        <div class="star star-3" style="position: fixed; top: 30%; right: 15%; font-size: 14px; color: var(--soft-blue); animation: starFloat 4s ease-in-out infinite 2s;">★</div>
+        <div class="star star-4" style="position: fixed; bottom: 20%; right: 25%; font-size: 10px; color: var(--pale-yellow); animation: starFloat 4s ease-in-out infinite 0.5s;">✦</div>
+        <div class="star star-5" style="position: fixed; top: 60%; right: 40%; font-size: 18px; color: var(--primary-pink); animation: starFloat 4s ease-in-out infinite 1.5s;">✧</div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner-moon">🌙</div>
+            <div class="loading-text">Connecting to the magical realm...</div>
+        </div>
+    </div>
+
+    <!-- Confirmation modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content card">
+            <h3>🌙 Confirm Reset</h3>
+            <p>Are you sure you want to reset the burp counter to 0?</p>
+            <div class="modal-actions">
+                <button class="btn btn--secondary" onclick="hideModal()">Cancel</button>
+                <button class="btn btn--danger" onclick="confirmReset()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">
+                🌙 Sailorspoooky's Burp Counter ✨
+            </h1>
+            <p class="subtitle">Magical control panel for your streaming adventures</p>
+
+            <!-- Connection status -->
+            <div class="connection-status" id="connectionStatus">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </div>
+
+        <!-- Main card -->
+        <div class="card">
+            <!-- Count display -->
+            <div class="count-display">
+                <div class="count-label">Current Burps</div>
+                <div class="count-number" id="currentCount">0</div>
+            </div>
+
+            <!-- Main burp button -->
+            <button class="burp-button" id="burpButton" onclick="incrementBurp()">
+                ✨ BURP! ✨
+            </button>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-group">
+                    <input type="number" class="form-control" id="manualCount" placeholder="Set count..." min="0">
+                    <button class="btn btn--primary" onclick="setManualCount()">Set Count</button>
+                </div>
+
+                <div class="control-group">
+                    <button class="btn btn--secondary" onclick="showResetModal()">Reset Counter</button>
+                    <button class="btn btn--outline" onclick="refreshData()">Refresh</button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalBurps">0</div>
+                    <div class="stat-label">Total Burps</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="sessionTime">00:00</div>
+                    <div class="stat-label">Session Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="burpsPerHour">0.0</div>
+                    <div class="stat-label">Burps/Hour</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="lastBurp">Never</div>
+                    <div class="stat-label">Last Burp</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="cp.js"></script>
+</body>
 </html>

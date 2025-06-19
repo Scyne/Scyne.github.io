@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Sailorspoooky Burp Counter - Connection Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-pink: #f1b7d1;
+            --soft-blue: #80b3d6;
+            --pale-yellow: #f7e6a1;
+            --deep-purple: #4c3d8f;
+            --coral-accent: #ff8b42;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--soft-blue) 50%, var(--pale-yellow) 100%);
+            min-height: 100vh;
+        }
+
+        .test-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(76, 61, 143, 0.3);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            color: var(--deep-purple);
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status.success { 
+            background: rgba(40, 167, 69, 0.1); 
+            color: #155724; 
+            border: 2px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .status.error { 
+            background: rgba(220, 53, 69, 0.1); 
+            color: #721c24; 
+            border: 2px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .status.warning { 
+            background: rgba(255, 193, 7, 0.1); 
+            color: #856404; 
+            border: 2px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status.info { 
+            background: rgba(23, 162, 184, 0.1); 
+            color: #0c5460; 
+            border: 2px solid rgba(23, 162, 184, 0.3);
+        }
+
+        .log {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--coral-accent) 0%, var(--primary-pink) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 139, 66, 0.4);
+        }
+
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 139, 66, 0.6);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .danger { 
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .danger:hover { 
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+        }
+
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .counter-display {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid rgba(76, 61, 143, 0.3);
+        }
+
+        .counter-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--deep-purple);
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .emoji {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-panel">
+        <h1>🧪 Sailorspoooky Burp Counter - Connection Test</h1>
+        <p>This magical testing realm helps verify that your Supabase connection is working correctly.</p>
+
+        <div id="connectionStatus" class="status warning">
+            <span class="emoji">🔄</span> Testing connection to the magical realm...
+        </div>
+
+        <div class="counter-display">
+            <div>Current Burp Count</div>
+            <div class="counter-number" id="currentCount">-</div>
+        </div>
+
+        <div class="test-buttons">
+            <button onclick="testConnection()">🔗 Test Connection</button>
+            <button onclick="testRead()">📖 Test Read Data</button>
+            <button onclick="testIncrement()">➕ Test Increment</button>
+            <button onclick="testReset()" class="danger">🔄 Test Reset</button>
+            <button onclick="testRealtimeSubscription()">📡 Test Real-time</button>
+            <button onclick="clearLog()">🧹 Clear Log</button>
+        </div>
+
+        <div>
+            <h3>🌙 Test Results & Debug Log</h3>
+            <div id="testLog" class="log">Ready to test magical connections...
+</div>
+        </div>
+
+        <div class="test-panel">
+            <h3>📋 Pre-Flight Checklist</h3>
+            <div id="checklistItems">
+                <div class="status info">
+                    <span class="emoji">📊</span> 
+                    <span>Database table exists: <span id="tableCheck">Checking...</span></span>
+                </div>
+                <div class="status info">
+                    <span class="emoji">🔒</span> 
+                    <span>Row Level Security: <span id="rlsCheck">Checking...</span></span>
+                </div>
+                <div class="status info">
+                    <span class="emoji">📡</span> 
+                    <span>Realtime enabled: <span id="realtimeCheck">Checking...</span></span>
+                </div>
+                <div class="status info">
+                    <span class="emoji">⚡</span> 
+                    <span>Functions available: <span id="functionsCheck">Checking...</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://myknpfezbylpwwlsahhg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15a25wZmV6YnlscHd3bHNhaGhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyOTcwMDQsImV4cCI6MjA2NTg3MzAwNH0.SOcjnjnUqR_I9C3he7Hg3djq0yZEdDgxprSWRAE-ZuI';
+
+        // Initialize Supabase client
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const statusDiv = document.getElementById('connectionStatus');
+        const logDiv = document.getElementById('testLog');
+        const countDiv = document.getElementById('currentCount');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const emoji = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logDiv.textContent += `[${timestamp}] ${emoji} ${message}
+`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusDiv.className = `status ${type}`;
+            const emoji = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            statusDiv.innerHTML = `<span class="emoji">${emoji}</span> ${message}`;
+        }
+
+        async function testConnection() {
+            log('🔗 Testing basic Supabase connection...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('burp_counter')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    throw error;
+                }
+
+                log('✅ Connection successful!', 'success');
+                updateStatus('Connected to magical realm! 🌙✨', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+                updateStatus(`Connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testRead() {
+            log('📖 Testing data read...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('burp_counter')
+                    .select('*')
+                    .eq('counter_id', 'sailorspoooky_main')
+                    .single();
+
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        log('⚠️ No data found, this is normal for first run', 'warning');
+                        countDiv.textContent = '0';
+                        return true;
+                    }
+                    throw error;
+                }
+
+                log(`✅ Data read successful! Count: ${data.count}`, 'success');
+                countDiv.textContent = data.count || 0;
+                return true;
+            } catch (error) {
+                log(`❌ Data read failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testIncrement() {
+            log('➕ Testing increment function...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .rpc('increment_burp_counter', {
+                        counter_name: 'sailorspoooky_main'
+                    });
+
+                if (error) throw error;
+
+                log(`✅ Increment successful! New count: ${data}`, 'success');
+                countDiv.textContent = data;
+                return true;
+            } catch (error) {
+                log(`❌ Increment failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testReset() {
+            if (!confirm('🌙 Are you sure you want to reset the counter for testing?')) {
+                return;
+            }
+
+            log('🔄 Testing reset function...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .rpc('reset_burp_counter', {
+                        counter_name: 'sailorspoooky_main'
+                    });
+
+                if (error) throw error;
+
+                log(`✅ Reset successful! Count: ${data}`, 'success');
+                countDiv.textContent = data;
+                return true;
+            } catch (error) {
+                log(`❌ Reset failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testRealtimeSubscription() {
+            log('📡 Testing real-time subscription...');
+
+            try {
+                const channel = supabaseClient
+                    .channel('test_channel')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'burp_counter',
+                            filter: 'counter_id=eq.sailorspoooky_main'
+                        },
+                        (payload) => {
+                            log(`📡 Real-time update received: ${JSON.stringify(payload.new)}`, 'success');
+                        }
+                    )
+                    .subscribe((status) => {
+                        log(`📡 Subscription status: ${status}`);
+                        if (status === 'SUBSCRIBED') {
+                            log('✅ Real-time subscription active!', 'success');
+                            // Test by triggering an increment
+                            setTimeout(() => {
+                                log('🧪 Triggering test increment to verify real-time...');
+                                testIncrement();
+                            }, 1000);
+                        }
+                    });
+
+                // Clean up after 10 seconds
+                setTimeout(() => {
+                    supabaseClient.removeChannel(channel);
+                    log('🧹 Real-time test channel cleaned up');
+                }, 10000);
+
+                return true;
+            } catch (error) {
+                log(`❌ Real-time test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function clearLog() {
+            logDiv.textContent = 'Log cleared...
+';
+        }
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', async () => {
+            log('🌙 Welcome to the magical testing realm!');
+            log('🔮 Running automatic connection tests...');
+
+            await testConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testRead();
+        });
+    </script>
+</body>
+</html>
