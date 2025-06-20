@@ -1,4 +1,3 @@
-
 :root {
   /* Colors */
   --color-background: rgba(252, 252, 249, 1);
@@ -219,7 +218,7 @@ html {
   font-size: var(--font-size-base);
   font-family: var(--font-family-base);
   line-height: var(--line-height-normal);
-  color: var(--color-text);
+  color: rgb(76 62 143);
   background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
@@ -950,4 +949,86 @@ body {
   .counter-label {
     font-size: 28px;
   }
+}
+/* Add or update these rules in your CSS */
+
+/* 1. Center the control panel in the viewport */
+body {
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Keep your background gradient */
+  background: linear-gradient(135deg, var(--primary-pink) 0%, var(--soft-blue) 50%, var(--pale-yellow) 100%);
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+/* 2. Make the control panel wide enough for the title to fit on one line */
+.control-panel {
+  max-width: 900px; /* Increase width as needed */
+  width: 100%;
+  min-width: 500px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  /* Optional: add padding for aesthetics */
+  padding: 32px 40px;
+  box-sizing: border-box;
+}
+
+/* 3. Remove the random dark bit in the center (likely the .card background) */
+.card {
+  background: transparent !important; /* Remove background */
+  box-shadow: none !important;        /* Remove shadow if any */
+  border: none !important;            /* Remove border if any */
+  /* Retain padding and border-radius for layout */
+  padding: var(--space-16);
+  border-radius: var(--radius-lg);
+}
+
+/* 4. Ensure the title stays on one line and is centered */
+.title {
+  text-align: center;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--deep-purple);
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--space-8);
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 5. Responsive: On small screens, allow wrapping */
+@media (max-width: 600px) {
+  .control-panel {
+    min-width: 0;
+    padding: 16px 4vw;
+    max-width: 98vw;
+  }
+  .title {
+    white-space: normal;
+    font-size: 1.5rem;
+  }
+}
+
+/* 6. Make sure overlays and backgrounds are not interfering */
+.magical-bg, .stars {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0;
+}
+
+/* 7. Remove any forced width/height on body for overlays */
+body {
+  width: auto !important;
+  height: auto !important;
+  overflow: auto !important;
 }
