@@ -19,18 +19,17 @@ let realtimeChannel = null;
 async function init() {
     try {
         console.log('🌙 Initializing Sailorspoooky Burp Counter...');
-
+        
         // Update status to connecting
         updateConnectionStatus('connecting');
-
+        
         // Fetch initial count
         await fetchCurrentCount();
-
+        
         // Set up real-time subscription
         setupRealtimeSubscription();
-
+        
         console.log('✨ Burp counter initialized successfully!');
-
     } catch (error) {
         console.error('❌ Failed to initialize burp counter:', error);
         updateConnectionStatus('error');
@@ -57,7 +56,6 @@ async function fetchCurrentCount() {
 
         updateCountDisplay(data.count);
         updateConnectionStatus('connected');
-
     } catch (error) {
         console.error('❌ Error fetching count:', error);
         updateConnectionStatus('error');
@@ -71,8 +69,8 @@ async function createInitialRecord() {
         const { data, error } = await supabaseClient
             .from('burp_counter')
             .insert([
-                { 
-                    counter_id: 'sailorspoooky_main', 
+                {
+                    counter_id: 'sailorspoooky_main',
                     count: 0,
                     session_metadata: {
                         session_name: 'Sailorspoooky Stream',
@@ -88,7 +86,6 @@ async function createInitialRecord() {
 
         updateCountDisplay(0);
         updateConnectionStatus('connected');
-
     } catch (error) {
         console.error('❌ Error creating initial record:', error);
         updateConnectionStatus('error');
@@ -122,7 +119,6 @@ function setupRealtimeSubscription() {
                     updateConnectionStatus('error');
                 }
             });
-
     } catch (error) {
         console.error('❌ Error setting up real-time subscription:', error);
         updateConnectionStatus('error');
@@ -134,9 +130,9 @@ function handleRealtimeUpdate(payload) {
     if (payload.new && typeof payload.new.count !== 'undefined') {
         const newCount = payload.new.count;
         const oldCount = parseInt(burpCountElement.textContent) || 0;
-
+        
         updateCountDisplay(newCount);
-
+        
         // Trigger sparkle effects if count increased
         if (newCount > oldCount) {
             triggerSparkleEffect();
@@ -147,21 +143,21 @@ function handleRealtimeUpdate(payload) {
 // Update the count display with animations
 function updateCountDisplay(count) {
     if (!burpCountElement) return;
-
+    
     const currentCount = parseInt(burpCountElement.textContent) || 0;
     const newCount = parseInt(count) || 0;
-
+    
     // Add updating class for animation
     burpCountElement.classList.add('updating');
-
+    
     // Update the number
     burpCountElement.textContent = newCount;
-
+    
     // Remove updating class after animation
     setTimeout(() => {
         burpCountElement.classList.remove('updating');
     }, 500);
-
+    
     // Trigger sparkles if count increased
     if (newCount > currentCount) {
         triggerSparkleEffect();
@@ -171,13 +167,13 @@ function updateCountDisplay(count) {
 // Update connection status
 function updateConnectionStatus(status) {
     if (!statusIndicator) return;
-
+    
     const statusDot = statusIndicator.querySelector('.status-dot');
     const statusText = statusIndicator.querySelector('.status-text');
-
+    
     // Remove all status classes
     statusIndicator.classList.remove('connected', 'error', 'connecting');
-
+    
     switch (status) {
         case 'connected':
             statusIndicator.classList.add('connected');
@@ -200,7 +196,7 @@ function updateConnectionStatus(status) {
 // Trigger sparkle effect
 function triggerSparkleEffect() {
     if (!sparklesContainer) return;
-
+    
     // Create multiple sparkles
     for (let i = 0; i < 8; i++) {
         setTimeout(() => {
@@ -214,17 +210,30 @@ function createSparkle() {
     const sparkle = document.createElement('div');
     sparkle.className = 'sparkle';
     sparkle.textContent = ['✨', '⭐', '🌟', '💫'][Math.floor(Math.random() * 4)];
-
-    // Random position around the counter
-    const containerRect = document.querySelector('.counter-display').getBoundingClientRect();
-    const x = Math.random() * containerRect.width;
-    const y = Math.random() * containerRect.height;
-
+    
+    // Get the counter element and container positions
+    const counterElement = document.querySelector('.counter-display');
+    const overlayContainer = document.querySelector('.overlay-container');
+    
+    if (!counterElement || !overlayContainer) return;
+    
+    // Get counter position relative to the overlay container
+    const counterRect = counterElement.getBoundingClientRect();
+    const containerRect = overlayContainer.getBoundingClientRect();
+    
+    // Calculate relative position
+    const counterLeft = counterRect.left - containerRect.left;
+    const counterTop = counterRect.top - containerRect.top;
+    
+    // Generate random position within and around the counter area
+    const x = counterLeft + (Math.random() * counterRect.width);
+    const y = counterTop + (Math.random() * counterRect.height);
+    
     sparkle.style.left = x + 'px';
     sparkle.style.top = y + 'px';
-
+    
     sparklesContainer.appendChild(sparkle);
-
+    
     // Remove sparkle after animation
     setTimeout(() => {
         if (sparkle.parentNode) {
