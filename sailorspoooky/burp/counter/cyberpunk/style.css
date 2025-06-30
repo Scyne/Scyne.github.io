@@ -703,52 +703,37 @@ width: var(--counter-width);
 height: var(--counter-height);
 }
 
-/* Overlay container */
 .overlay-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: 
+position: relative;
+width: 100%;
+height: 100%;
+display: flex;
+align-items: center;
+justify-content: center;
+background: 
     linear-gradient(90deg, transparent 98%, var(--cyber-grid-color) 100%),
     linear-gradient(0deg, transparent 98%, var(--cyber-grid-color) 100%);
-    background-size: 20px 20px;
-    }
+background-size: 20px 20px;
+}
 
 /* Main counter display */
 .counter-display {
-    position: relative;
-    text-align: center;
-    z-index: 10;
-    background: linear-gradient(135deg, rgba(255, 255, 253, 1) 0%, rgb(220 215 215 / 95%) 50%, rgba(255, 255, 253, 1) 100%);
-    border-radius: 0px;
-    padding: 10px 60px;
-    backdrop-filter: blur(10px);
-    /* Remove the original border and use pseudo-element for inset border */
-    border: none;
-    box-shadow:
+position: relative;
+text-align: center;
+z-index: 10;
+background: linear-gradient(135deg,
+    rgba(10, 10, 10, 0.95) 0%,
+    rgba(51, 51, 51, 0.9) 50%,
+    rgba(10, 10, 10, 0.95) 100%);
+border-radius: 8px;
+padding: 20px 40px;
+backdrop-filter: blur(10px);
+border: 2px solid var(--cyber-red);
+box-shadow:
     0 0 20px rgba(255, 0, 64, 0.5),
     inset 0 0 20px rgba(255, 0, 64, 0.1),
     0 0 40px rgba(255, 0, 64, 0.3);
-    transition: all var(--animation-duration) cubic-bezier(0.4, 0, 0.2, 1);
-    /* position: relative is required for the pseudo-element */
-}
-
-/* Inset border using ::before pseudo-element */
-.counter-display::before {
-    content: "";
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    right: 6px;
-    bottom: 6px;
-    border: 6px solid var(--cyber-red);
-    border-radius: 0px;
-    pointer-events: none;
-    z-index: 2;
-    box-sizing: border-box;
+transition: all var(--animation-duration) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .counter-display:hover {
@@ -761,35 +746,42 @@ border-color: var(--cyber-white);
 }
 
 .counter-label {
-    font-size: var(--label-font-size);
-    font-weight: var(--font-weight-bold);
-    color: #000000;
-    margin-bottom: 8px;
-    /* text-shadow: 0 0 10px var(--cyber-black)
-, 0 0 20px var(--cyber-black), 0 0 30px var(--cyber-black); */
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    font-family: var(--font-family-mono);
-    }
+font-size: var(--label-font-size);
+font-weight: var(--font-weight-bold);
+color: var(--cyber-white);
+margin-bottom: 8px;
+text-shadow: 
+    0 0 10px var(--cyber-red),
+    0 0 20px var(--cyber-red),
+    0 0 30px var(--cyber-red);
+letter-spacing: 3px;
+text-transform: uppercase;
+font-family: var(--font-family-mono);
+}
 
 .counter-number {
-    font-size: var(--main-font-size);
-    font-weight: var(--font-weight-bold);
-    color: var(--cyber-black);
-    text-shadow: 0 0 10px var(--cyber-white),
-    0 0 20px var(--cyber-white),
-    0 0 40px var(--cyber-white),
+font-size: var(--main-font-size);
+font-weight: var(--font-weight-bold);
+color: var(--cyber-white);
+text-shadow:
+    0 0 10px var(--cyber-red),
+    0 0 20px var(--cyber-red),
+    0 0 40px var(--cyber-red),
     0 0 80px var(--cyber-red);
-    line-height: 1;
-    transition: all var(--animation-duration) cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: var(--font-family-mono);
-    }
+line-height: 1;
+transition: all var(--animation-duration) cubic-bezier(0.4, 0, 0.2, 1);
+font-family: var(--font-family-mono);
+}
 
-.counter-number.updating {transform: scale(1.15);color: var(--cyber-red);/* text-shadow:
+.counter-number.updating {
+transform: scale(1.15);
+color: var(--cyber-red);
+text-shadow:
     0 0 20px var(--cyber-red),
     0 0 40px var(--cyber-red),
     0 0 60px var(--cyber-red),
-    0 0 100px var(--cyber-red); */}
+    0 0 100px var(--cyber-red);
+}
 
 .crescent-moon {
 position: absolute;
@@ -827,7 +819,7 @@ animation-delay: 0s;
 }
 
 .star-1:before {
-content: "â–²";
+content: "▲";
 }
 
 .star-2 {
@@ -838,7 +830,7 @@ animation-delay: 1s;
 }
 
 .star-2:before {
-content: "â—†";
+content: "◆";
 }
 
 .star-3 {
@@ -849,7 +841,7 @@ animation-delay: 2s;
 }
 
 .star-3:before {
-content: "â– ";
+content: "■";
 }
 
 .star-4 {
@@ -860,7 +852,7 @@ animation-delay: 0.5s;
 }
 
 .star-4:before {
-content: "â—";
+content: "●";
 }
 
 .star-5 {
@@ -871,7 +863,7 @@ animation-delay: 1.5s;
 }
 
 .star-5:before {
-content: "â—¢";
+content: "◢";
 }
 
 /* Enhanced status indicator */
@@ -949,7 +941,7 @@ font-family: var(--font-family-mono);
 }
 
 .sparkle:before {
-content: "â—Š";
+content: "◊";
 }
 
 /* Animations */
@@ -1107,7 +1099,12 @@ z-index: 0;
 }
 
 /* 7. Remove any forced width/height on body for overlays */
-body {background: transparent !important;width: auto !important;height: auto !important;overflow: auto !important;}
+body {
+background: var(--cyber-black) !important;
+width: auto !important;
+height: auto !important;
+overflow: auto !important;
+}
 
 /* Cyberpunk edge fade effect */
 body::before {
