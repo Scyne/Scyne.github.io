@@ -678,7 +678,19 @@ format('woff2');
 }
 
 /* Custom properties for Cyberpunk theme */
-:root {--cyber-red: #f72034;--cyber-black: #0a0a0a;--cyber-white: #ffffff;--cyber-red-glow: #ff0040;--cyber-dark-red: #cc0033;--cyber-grid-color: #333333;--counter-width: 400px;--counter-height: 200px;--main-font-size: 72px;--label-font-size: 24px;--animation-duration: 0.5s;}
+:root {
+--cyber-red: #ff0040;
+--cyber-black: #0a0a0a;
+--cyber-white: #ffffff;
+--cyber-red-glow: #ff0040;
+--cyber-dark-red: #cc0033;
+--cyber-grid-color: #333333;
+--counter-width: 400px;
+--counter-height: 200px;
+--main-font-size: 72px;
+--label-font-size: 24px;
+--animation-duration: 0.5s;
+}
 
 /* Base overlay styles */
 body {
@@ -710,16 +722,16 @@ height: var(--counter-height);
     position: relative;
     text-align: center;
     z-index: 10;
-    background: linear-gradient(135deg, rgba(192, 21, 47, 1) 0%, rgba(192, 21, 47, 1) 50%, rgba(192, 21, 47, 1) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 253, 1) 0%, rgb(220 215 215 / 95%) 50%, rgba(255, 255, 253, 1) 100%);
     border-radius: 0px;
     padding: 10px 60px;
     backdrop-filter: blur(10px);
     /* Remove the original border and use pseudo-element for inset border */
     border: none;
     box-shadow:
-    0 0 20px rgb(255 0 64 / 0%),
+    0 0 20px rgba(255, 0, 64, 0.5),
     inset 0 0 20px rgba(255, 0, 64, 0.1),
-    0 0 40px rgb(255 0 64 / 0%);
+    0 0 40px rgba(255, 0, 64, 0.3);
     transition: all var(--animation-duration) cubic-bezier(0.4, 0, 0.2, 1);
     /* position: relative is required for the pseudo-element */
 }
@@ -732,7 +744,7 @@ height: var(--counter-height);
     left: 6px;
     right: 6px;
     bottom: 6px;
-    border: 6px solid var(--cyber-dark-red);
+    border: 6px solid var(--cyber-red);
     border-radius: 0px;
     pointer-events: none;
     z-index: 2;
@@ -751,7 +763,7 @@ border-color: var(--cyber-white);
 .counter-label {
     font-size: var(--label-font-size);
     font-weight: var(--font-weight-bold);
-    color: rgba(252, 252, 249, 1);
+    color: #000000;
     margin-bottom: 8px;
     /* text-shadow: 0 0 10px var(--cyber-black)
 , 0 0 20px var(--cyber-black), 0 0 30px var(--cyber-black); */
@@ -763,213 +775,11 @@ border-color: var(--cyber-white);
 .counter-number {
     font-size: var(--main-font-size);
     font-weight: var(--font-weight-bold);
-    color: rgba(245, 245, 245, 1);
-    text-shadow: devtools-icon.shadow-swatch-icon{color:var(--icon-css);
-    transform:scale(0.7);
-    position:relative;
-    margin:-5px -2px -5px -4px;
-    user-select:none;
-    vertical-align:baseline;
-    cursor:pointer;&:
-    hover{color:var(--icon-css-hover)}}
-/*# sourceURL=devtools://devtools/bundled/ui/legacy/components/inline_editor/cssShadowSwatch.css */0 0 10px rgba(192, 21, 47, 1),
-    devtools-icon.shadow-swatch-icon{color:var(--icon-css);
-    transform:scale(0.7);
-    position:relative;
-    margin:-5px -2px -5px -4px;
-    user-select:none;
-    vertical-align:baseline;
-    cursor:pointer;&:
-    hover{color:var(--icon-css-hover)}}
-/*# sourceURL=devtools://devtools/bundled/ui/legacy/components/inline_editor/cssShadowSwatch.css */0 0 20px rgba(192, 21, 47, 1),
-    devtools-icon.shadow-swatch-icon{color:var(--icon-css);
-    transform:scale(0.7);
-    position:relative;
-    margin:-5px -2px -5px -4px;
-    user-select:none;
-    vertical-align:baseline;
-    cursor:pointer;&:
-    hover{color:var(--icon-css-hover)}}
-/*# sourceURL=devtools://devtools/bundled/ui/legacy/components/inline_editor/cssShadowSwatch.css */0 0 40px var(.text-button{
-    margin:2px;
-    height:24px;
-    font-size:12px;
-    font-family:var(--default-font-family);
-    border:1px solid var(--sys-color-tonal-outline);
-    border-radius:12px;
-    padding:0 12px;
-    font-weight:500;
-    color:var(--sys-color-primary);
-    background-color:var(--sys-color-cdt-base-container);
-    flex:none;
-    white-space:nowrap}.text-button:
-    disabled{opacity:38%}.text-button:not(:
-    disabled):focus,
-.text-button:not(:disabled):hover,
-.text-button:not(:disabled):active{background-color:var(--sys-color-state-hover-on-subtle)}.text-button:not(:
-    disabled, .primary-button):focus-visible{outline:2px solid var(--sys-color-state-focus-ring);
-    color:var(--sys-color-on-primary);
-    background-color:var(--sys-color-cdt-base-container)}.text-button:not(:
-    disabled, .running):focus,
-.text-button:not(:disabled, .running):hover,
-.text-button:not(:disabled, .running):active{color:var(--sys-color-primary)}.text-button.link-style,
-.text-button.link-style:
-    hover,
-.text-button.link-style:active{background:none;
-    border:none;
-    outline:none;
-    border-radius:2px;
-    margin:0;
-    padding:0!important;
-    font:inherit;
-    cursor:pointer;
-    height:unset}.text-button.primary-button,
-.text-button.primary-button:not(:
-    disabled):focus{background-color:var(--sys-color-primary);
-    border:none;
-    color:var(--sys-color-on-primary)}.text-button.primary-button:not(:
-    disabled):active{background-color:color-mix(in srgb,var(--sys-color-primary),var(--sys-color-state-ripple-primary) 32%);
-    color:var(--sys-color-on-primary)}.text-button.primary-button:not(:
-    disabled):hover{background-color:color-mix(in srgb,var(--sys-color-primary),var(--sys-color-state-hover-on-prominent) 6%);
-    color:var(--sys-color-on-primary)}.text-button.primary-button:not(:
-    disabled):focus-visible{background-color:var(--sys-color-primary);
-    outline-offset:2px;
-    outline:2px solid var(--sys-color-state-focus-ring);
-    color:var(--sys-color-on-primary)}
-    @media (forced-colors: active){.text-button{background-color:ButtonFace;
-    color:ButtonText;
-    border-color:ButtonText}.text-button:
-    disabled{forced-color-adjust:none;
-    opacity:100%;
-    background:ButtonFace;
-    border-color:GrayText;
-    color:GrayText}.text-button:not(:
-    disabled):focus-visible{forced-color-adjust:none;
-    background-color:ButtonFace;
-    color:Highlight!important;
-    border-color:Highlight;
-    outline:2px solid ButtonText;
-    box-shadow:var(--legacy-focus-ring-active-shadow)}.text-button:not(:
-    disabled):hover,
-  .text-button:not(:disabled):active{forced-color-adjust:none;
-    background-color:Highlight;
-    color:HighlightText!important;
-    box-shadow:var(--sys-color-primary)}.text-button.primary-button{
-    forced-color-adjust:none;
-    background-color:Highlight;
-    color:HighlightText;
-    border:1px solid Highlight}.text-button.primary-button:not(:
-    disabled):focus-visible{background-color:Highlight;
-    color:HighlightText!important;
-    border-color:ButtonText}.text-button.primary-button:not(:
-    disabled):hover,
-  .text-button.primary-button:not(:disabled):active{background-color:HighlightText;
-    color:Highlight!important;
-    border-color:Highlight}}
-/*# sourceURL=devtools://devtools/bundled/ui/components/buttons/textButton.css */.link-swatch-link{
-    display:inline}.link-swatch-link:not(.undefined){
-    cursor:pointer;
-    text-underline-offset:2px;
-    color:var(--text-link)}.link-swatch-link:
-    hover:not(.undefined){text-decoration:underline}.link-swatch-link:
-    focus:not(:focus-visible){outline:none}.link-swatch-link.undefined{
-    opacity:100%;
-    color:var(--text-disabled)}
-/*# sourceURL=devtools://devtools/bundled/ui/legacy/components/inline_editor/linkSwatch.css */
-    --cyber-white), devtools-icon.shadow-swatch-icon{color:var(--icon-css);
-    transform:scale(0.7);
-    position:relative;
-    margin:-5px -2px -5px -4px;
-    user-select:none;
-    vertical-align:baseline;
-    cursor:pointer;&:
-    hover{color:var(--icon-css-hover)}}
-/*# sourceURL=devtools://devtools/bundled/ui/legacy/components/inline_editor/cssShadowSwatch.css */0 0 80px var(.text-button{
-    margin:2px;
-    height:24px;
-    font-size:12px;
-    font-family:var(--default-font-family);
-    border:1px solid var(--sys-color-tonal-outline);
-    border-radius:12px;
-    padding:0 12px;
-    font-weight:500;
-    color:var(--sys-color-primary);
-    background-color:var(--sys-color-cdt-base-container);
-    flex:none;
-    white-space:nowrap}.text-button:
-    disabled{opacity:38%}.text-button:not(:
-    disabled):focus,
-.text-button:not(:disabled):hover,
-.text-button:not(:disabled):active{background-color:var(--sys-color-state-hover-on-subtle)}.text-button:not(:
-    disabled, .primary-button):focus-visible{outline:2px solid var(--sys-color-state-focus-ring);
-    color:var(--sys-color-on-primary);
-    background-color:var(--sys-color-cdt-base-container)}.text-button:not(:
-    disabled, .running):focus,
-.text-button:not(:disabled, .running):hover,
-.text-button:not(:disabled, .running):active{color:var(--sys-color-primary)}.text-button.link-style,
-.text-button.link-style:
-    hover,
-.text-button.link-style:active{background:none;
-    border:none;
-    outline:none;
-    border-radius:2px;
-    margin:0;
-    padding:0!important;
-    font:inherit;
-    cursor:pointer;
-    height:unset}.text-button.primary-button,
-.text-button.primary-button:not(:
-    disabled):focus{background-color:var(--sys-color-primary);
-    border:none;
-    color:var(--sys-color-on-primary)}.text-button.primary-button:not(:
-    disabled):active{background-color:color-mix(in srgb,var(--sys-color-primary),var(--sys-color-state-ripple-primary) 32%);
-    color:var(--sys-color-on-primary)}.text-button.primary-button:not(:
-    disabled):hover{background-color:color-mix(in srgb,var(--sys-color-primary),var(--sys-color-state-hover-on-prominent) 6%);
-    color:var(--sys-color-on-primary)}.text-button.primary-button:not(:
-    disabled):focus-visible{background-color:var(--sys-color-primary);
-    outline-offset:2px;
-    outline:2px solid var(--sys-color-state-focus-ring);
-    color:var(--sys-color-on-primary)}
-    @media (forced-colors: active){.text-button{background-color:ButtonFace;
-    color:ButtonText;
-    border-color:ButtonText}.text-button:
-    disabled{forced-color-adjust:none;
-    opacity:100%;
-    background:ButtonFace;
-    border-color:GrayText;
-    color:GrayText}.text-button:not(:
-    disabled):focus-visible{forced-color-adjust:none;
-    background-color:ButtonFace;
-    color:Highlight!important;
-    border-color:Highlight;
-    outline:2px solid ButtonText;
-    box-shadow:var(--legacy-focus-ring-active-shadow)}.text-button:not(:
-    disabled):hover,
-  .text-button:not(:disabled):active{forced-color-adjust:none;
-    background-color:Highlight;
-    color:HighlightText!important;
-    box-shadow:var(--sys-color-primary)}.text-button.primary-button{
-    forced-color-adjust:none;
-    background-color:Highlight;
-    color:HighlightText;
-    border:1px solid Highlight}.text-button.primary-button:not(:
-    disabled):focus-visible{background-color:Highlight;
-    color:HighlightText!important;
-    border-color:ButtonText}.text-button.primary-button:not(:
-    disabled):hover,
-  .text-button.primary-button:not(:disabled):active{background-color:HighlightText;
-    color:Highlight!important;
-    border-color:Highlight}}
-/*# sourceURL=devtools://devtools/bundled/ui/components/buttons/textButton.css */.link-swatch-link{
-    display:inline}.link-swatch-link:not(.undefined){
-    cursor:pointer;
-    text-underline-offset:2px;
-    color:var(--text-link)}.link-swatch-link:
-    hover:not(.undefined){text-decoration:underline}.link-swatch-link:
-    focus:not(:focus-visible){outline:none}.link-swatch-link.undefined{
-    opacity:100%;
-    color:var(--text-disabled)}
-    --cyber-red);
+    color: var(--cyber-black);
+    text-shadow: 0 0 10px var(--cyber-white),
+    0 0 20px var(--cyber-white),
+    0 0 40px var(--cyber-white),
+    0 0 80px var(--cyber-red);
     line-height: 1;
     transition: all var(--animation-duration) cubic-bezier(0.4, 0, 0.2, 1);
     font-family: var(--font-family-mono);
