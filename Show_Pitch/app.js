@@ -15,25 +15,25 @@ class PitchDeck {
         
         // CRITICAL: Video data with proper descriptions - TOP PRIORITY
         this.videos = {
-            '6_fGJ5VRasc': {
+            'XcQ69yjIu9A': {
                 title: 'Phasma Finds Love',
                 duration: '3:36',
                 description: 'Pop culture satire and storytelling that demonstrates our unique voice in VR comedy'
             },
-            'XcQ69yjIu9A': {
+            'vloNmTqxYNE': {
                 title: 'Do the Brushwood',
                 duration: '1:43',
                 description: 'Interactive VR-native content showcasing our innovative approach to virtual reality entertainment'
             },
-            'vloNmTqxYNE': {
+            '6_fGJ5VRasc': {
                 title: 'A Very Insightful Interview',
                 duration: '0:44',
                 description: 'Brainrot meme humor example demonstrating our understanding of internet culture'
             },
             'KwjZxTbsfYU': {
-                title: 'Additional Content Sample',
-                duration: 'Various',
-                description: 'Range demonstration showing the versatility and creativity of The Scynewave Show'
+                title: 'Banned From Steam',
+                duration: '10:00',
+                description: 'Range demonstration showing the longform comedy content of The Scynewave Show'
             }
         };
         
