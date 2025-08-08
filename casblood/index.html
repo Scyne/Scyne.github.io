@@ -587,15 +587,6 @@ setTimeout(initFavicon, 1000);
             }
         }
 
-        // Page visibility handling for battery optimization
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                stopAutoRefresh();
-            } else {
-                startAutoRefresh();
-            }
-        });
-
         // Start monitoring when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, starting glucose monitoring...');

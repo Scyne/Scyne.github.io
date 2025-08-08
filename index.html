@@ -18,7 +18,7 @@
   <meta name="MSSmartTagsPreventParsing" content="true" />
   <meta http-equiv="imagetoolbar" content="false" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
+
   <style>
     * { 
       padding: 0; 
@@ -217,30 +217,40 @@
       margin-bottom: 15px;
     }
 
+    #cycling-service {
+      display: inline;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .cycling-fade {
+      opacity: 0.7;
+    }
+
     @media (max-width: 767px) {
       .scyne-logo {
         height: 60vh;
         width: 200px;
       }
-      
+
       .logo-text {
         display: none;
       }
-      
+
       .logo-text-mobile {
         display: block;
       }
-      
+
       .menu-dropdown {
         right: 210px;
         width: 120px;
       }
-      
+
       .modal-content {
         width: 90%;
         margin: 20% auto;
       }
-      
+
       .headshot {
         float: none;
         display: block;
@@ -267,7 +277,7 @@
     <span class="logo-text">SCYNE</span>
     <span class="logo-text-mobile">SCYNE</span>
   </div>
-  
+
   <!-- Menu Dropdown -->
   <div class="menu-dropdown">
     <div class="menu-item" id="about-trigger">About</div>
@@ -284,10 +294,10 @@
       </div>
       <div class="modal-body">
         <img src="WavesHeadshot.png" alt="Ki Scyne" class="headshot">
-        <p>Ki Scyne IRL is the personality behind the <a href="http://twitch.scyne.com">V-Tuber Scyne and //:SIGNAL on Twitch</a>. Ki is a magician, a proud member of the <a href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a href="https://twitter.com/shwood">Brian Brushwood's</a> legitimately illegitimate black child.</p>
-        <p>Ki is <a href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Ambigender</a> (Ey/Em/Eir), writes in 300 characters at <a href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all their music on <a href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a href="mailto:Ki@Scyne.com">Ki@Scyne.com</a>.</p>
-        <p>Ki currently lives with the best Husband in the world and their partner in Albany, Ga. They have four cats whom are good babies named Galen, Marshmallow, Han, and Chewie, and two beautiful puppers named Xena and Bear-Bear. All of them are perfect in every way.</p>
-        <p>You can find em on the internet by going entering url <a href="https://scyne.com/">[enter_service_here].Scyne.com</a></p>
+        <p>Ki Scyne IRL is the personality behind the <a href="http://twitch.scyne.com">V-Tuber Scyne and The Scynewave Show on Twitch</a>. Ki is one of the Content Directors at <a href="https://c1024.tv/">Construct 1024</a>, the first public VR Television network. Ki is also a magician, a proud member of the <a href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a href="https://twitter.com/shwood">Brian Brushwood's</a> legitimately illegitimate black child.</p>
+        <p>Ki is <a href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Androgyne</a> (Ey/Em/Eir), writes in 300 characters at <a href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all eir music on <a href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a href="mailto:Ki@Scyne.com">Ki@Scyne.com</a>.</p>
+        <p>Ki is polyamorus, living with the best Husband in the world and eir husband's other spouce in Albany, Ga. They have four cats whom are good babies named Galen, Marshmallow, Han, and Chewie, and two beautiful puppers named <a href="https://youtu.be/NnTC_F6beps">Xena</a> and <a href="https://youtu.be/_Z4iqxHuydU">Bear-Bear</a>. All of them are perfect in every way.</p>
+        <p>You can find em on the internet by going entering url <a href="https://scyne.com/" id="cycling-link"><span id="cycling-service">twitch</span>.Scyne.com</a></p>
       </div>
     </div>
   </div>
@@ -301,6 +311,7 @@
       </div>
       <div class="modal-body">
         <ul class="links-list">
+          <li><a href="https://discord.gg/construct-1024-vrchat-rollthered-762908352493256714">Construct 1024</a></li>
           <li><a href="http://twitch.scyne.com">Twitch</a></li>
           <li><a href="https://bsky.app/profile/scyne.com">Bluesky</a></li>
           <li><a href="mailto:Ki@Scyne.com">Email</a></li>
@@ -328,11 +339,58 @@
     $(document).ready(function() {
       let menuTimer;
       const menuHoverDelay = 1000; // 1 second delay
+      let cyclingTimer;
+
+      // Cycling link functionality
+      const socialPlatforms = [
+        'twitch', 'steam', 'discord', 'snapchat', 'instagram', 'twitter', 
+        'bluesky', 'youtube', 'tiktok', 'facebook', 'linkedin', 'reddit',
+        'mastodon', 'threads', 'pinterest', 'spotify', 'apple', 'github',
+        'dribbble', 'behance', 'medium', 'substack', 'patreon', 'ko-fi'
+      ];
+
+      let currentIndex = 0;
+
+      function cyclePlatform() {
+        const cyclingElement = $('#cycling-service');
+        const linkElement = $('#cycling-link');
+
+        // Add fade effect
+        cyclingElement.addClass('cycling-fade');
+
+        setTimeout(() => {
+          // Move to next platform
+          currentIndex = (currentIndex + 1) % socialPlatforms.length;
+          const platform = socialPlatforms[currentIndex];
+
+          // Update text and href - ensure no extra spaces
+          cyclingElement.text(platform);
+          linkElement.attr('href', 'https://' + platform + '.scyne.com/');
+
+          // Remove fade effect
+          cyclingElement.removeClass('cycling-fade');
+        }, 100); // Brief fade duration
+      }
+
+      function startCycling() {
+        if (cyclingTimer) {
+          clearInterval(cyclingTimer);
+        }
+        // Cycle every 500ms for much faster animation
+        cyclingTimer = setInterval(cyclePlatform, 500);
+      }
+
+      function stopCycling() {
+        if (cyclingTimer) {
+          clearInterval(cyclingTimer);
+          cyclingTimer = null;
+        }
+      }
 
       // Desktop hover logic
       function setupDesktopMenu() {
         const menuArea = $(".scyne-logo, .menu-dropdown");
-        
+
         menuArea.on("mouseenter", function() {
           clearTimeout(menuTimer);
           $(".menu-dropdown").addClass("visible");
@@ -361,11 +419,18 @@
           const target = $(this).attr('id').replace('-trigger', '-modal');
           $("#" + target).show();
           $(".menu-dropdown").removeClass("visible");
+
+          // Start cycling when about modal opens
+          if (target === 'about-modal') {
+            startCycling();
+          }
         });
 
         $(".close, .modal").click(function(e) {
           if ($(e.target).is(".modal, .close")) {
             $(".modal").hide();
+            // Stop cycling when modal closes
+            stopCycling();
           }
         });
       };
