@@ -1,27 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- 
+  HEY HEY HEY n8n!
+  Thanks again for the opportunity to join the team. This app is an n8n powered
+  version of a glucose monitor that I built to watch my spouse's levels. The below
+  is self explanatory, it converts the responce from the webhook into a control pannel.
+  The webhook is a conversion of a node.js server that I built for the original
+  version of this app. 
+  You can find that workflow at https://scyne.com/casblood/n8n/workflow.json
+  If you are interested, you can find a video of my dogs at
+  https://scyne.com/casblood/n8n/Pupdate.mp4
+-->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cas' Blood Glucose</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:      #0a0e17;
       --surface: #111827;
       --border:  #1e2d40;
-      --low:     #38bdf8;
-      --normal:  #34d399;
-      --high:    #f97316;
-      --urgent:  #ef4444;
       --muted:   #4b5563;
       --text:    #e2e8f0;
       --sub:     #94a3b8;
-      --mono:    'Space Mono', monospace;
-      --sans:    'DM Sans', sans-serif;
+
+      /* Glucose level colours */
+      --very-low:  #d32f2f;
+      --low:       #f44336;
+      --normal:    #4CAF50;
+      --high:      #FF9800;
+      --very-high: #d32f2f;
+      --unknown:   #94a3b8;
+
+      --mono: Arial, sans-serif;
+      --sans: Arial, sans-serif;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -32,6 +49,7 @@
       align-items: center;
       padding: 2rem 1rem 3rem;
     }
+
     body::before {
       content: '';
       position: fixed;
@@ -44,6 +62,7 @@
       pointer-events: none;
       z-index: 0;
     }
+
     .wrapper {
       position: relative;
       z-index: 1;
@@ -79,7 +98,7 @@
       transition: background 0.4s;
     }
     #status-dot.live  { background: var(--normal); box-shadow: 0 0 6px var(--normal); animation: pulse 2s infinite; }
-    #status-dot.error { background: var(--urgent); }
+    #status-dot.error { background: var(--very-low); }
     @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
     #last-updated { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
 
@@ -88,17 +107,25 @@
     .reading-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
     .reading-left  { display: flex; flex-direction: column; gap: 0.5rem; }
     .reading-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub); }
-    .reading-value { font-family: var(--mono); font-size: 5.5rem; font-weight: 700; line-height: 1; color: var(--normal); transition: color 0.5s; letter-spacing: -0.02em; }
+    .reading-value {
+      font-family: var(--mono);
+      font-size: 5.5rem;
+      font-weight: bold;
+      line-height: 1;
+      color: var(--unknown);
+      transition: color 0.5s;
+      letter-spacing: -0.02em;
+    }
     .reading-unit  { font-family: var(--mono); font-size: 0.8rem; color: var(--sub); letter-spacing: 0.05em; }
     .reading-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; }
-    .trend-arrow   { font-size: 3rem; line-height: 1; color: var(--normal); transition: color 0.5s; }
+    .trend-arrow   { font-size: 3rem; line-height: 1; color: var(--unknown); transition: color 0.5s; }
     .range-badge   { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.75rem; border-radius: 4px; transition: all 0.5s; }
 
     /* ── Stats ── */
     .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
     .stat-cell  { background: var(--surface); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
     .stat-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-    .stat-value { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; color: var(--text); }
+    .stat-value { font-family: var(--mono); font-size: 1.4rem; font-weight: bold; color: var(--text); }
     .stat-sub   { font-size: 0.7rem; color: var(--muted); }
 
     /* ── Chart ── */
@@ -112,7 +139,7 @@
       border: 1px solid var(--border); background: transparent; color: var(--muted);
       cursor: pointer; transition: all 0.2s;
     }
-    .range-btn.active, .range-btn:hover { border-color: var(--normal); color: var(--normal); background: rgba(52,211,153,0.08); }
+    .range-btn.active, .range-btn:hover { border-color: var(--normal); color: var(--normal); background: rgba(76,175,80,0.08); }
     .chart-wrap { position: relative; height: 200px; }
     .range-legend { display: flex; gap: 1.25rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
     .legend-item  { display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: var(--muted); font-family: var(--mono); }
@@ -130,7 +157,7 @@
     @keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
 
     /* ── Error ── */
-    .error-msg { font-family: var(--mono); font-size: 0.8rem; color: var(--urgent); text-align: center; padding: 1rem; display: none; }
+    .error-msg { font-family: var(--mono); font-size: 0.8rem; color: var(--very-low); text-align: center; padding: 1rem; display: none; }
   </style>
 </head>
 <body>
@@ -184,20 +211,22 @@
       <canvas id="glucoseChart"></canvas>
     </div>
     <div class="range-legend">
-      <div class="legend-item"><div class="legend-line" style="background:var(--urgent);opacity:0.6"></div>High &gt;180</div>
-      <div class="legend-item"><div class="legend-line" style="background:var(--normal);opacity:0.6"></div>Target 70–180</div>
-      <div class="legend-item"><div class="legend-line" style="background:var(--low);opacity:0.6"></div>Low &lt;70</div>
+      <div class="legend-item"><div class="legend-line" style="background:#f44336;opacity:0.7"></div>High &gt;180</div>
+      <div class="legend-item"><div class="legend-line" style="background:#4CAF50;opacity:0.7"></div>Target 75–180</div>
+      <div class="legend-item"><div class="legend-line" style="background:#FF9800;opacity:0.7"></div>Low &lt;75</div>
     </div>
   </div>
 
   <div class="error-msg" id="error-msg">⚠ Unable to fetch glucose data. Retrying…</div>
 
 </div>
+<!-- 
+  API workflow can be obtained at https://scyne.com/casblood/n8n/workflow.json
+-->
 <script>
   const API_URL    = 'https://n8n.hive.scyne.com/webhook/glucose';
   const REFRESH_MS = 60000;
-
-  const TREND_MAP = { 1:'↑', 2:'↗', 3:'→', 4:'↘', 5:'↓' };
+  const TREND_MAP  = { 1:'↑', 2:'↗', 3:'→', 4:'↘', 5:'↓' };
 
   let chart       = null;
   let allHistory  = [];
@@ -213,24 +242,67 @@
   const elDot     = document.getElementById('status-dot');
   const elError   = document.getElementById('error-msg');
 
-  // ── Helpers ──────────────────────────────────────────────
+  // ── Glucose colour scale (matches original app exactly) ───
   function glucoseColor(v) {
-    if (v < 70)  return '#38bdf8';
-    if (v > 180) return '#f97316';
-    return '#34d399';
+    if (v < 55)  return '#d32f2f';  // very low
+    if (v < 75)  return '#f44336';  // low
+    if (v <= 180)return '#4CAF50';  // normal
+    if (v <= 250)return '#FF9800';  // high
+    return               '#d32f2f'; // very high
   }
 
   function glucoseLabel(v) {
-    if (v < 54)  return { text: 'URGENT LOW',  color: '#ef4444' };
-    if (v < 70)  return { text: 'LOW',          color: '#38bdf8' };
-    if (v <= 180)return { text: 'IN RANGE',     color: '#34d399' };
-    if (v <= 250)return { text: 'HIGH',         color: '#f97316' };
-    return              { text: 'URGENT HIGH',  color: '#ef4444' };
+    if (v < 55)  return { text: 'URGENT LOW',  color: '#d32f2f' };
+    if (v < 75)  return { text: 'LOW',          color: '#f44336' };
+    if (v <= 180)return { text: 'IN RANGE',     color: '#4CAF50' };
+    if (v <= 250)return { text: 'HIGH',         color: '#FF9800' };
+    return              { text: 'URGENT HIGH',  color: '#d32f2f' };
   }
 
-  // Parse the locale-string timestamps LibreView returns: "3/16/2026 4:32:01 AM"
+  // ── Favicon ───────────────────────────────────────────────
+  const faviconCanvas = document.createElement('canvas');
+  faviconCanvas.width = faviconCanvas.height = 32;
+  const faviconCtx = faviconCanvas.getContext('2d');
+
+  let faviconLink = document.querySelector('link[rel="icon"]') ||
+                    document.querySelector('link[rel="shortcut icon"]');
+  if (!faviconLink) {
+    faviconLink = document.createElement('link');
+    faviconLink.rel  = 'icon';
+    faviconLink.type = 'image/png';
+    document.head.appendChild(faviconLink);
+  }
+
+  function updateFavicon(value) {
+    const color = value ? glucoseColor(value) : '#4b5563';
+    const size  = 32;
+    faviconCtx.clearRect(0, 0, size, size);
+
+    // Rounded square background
+    faviconCtx.fillStyle = color;
+    faviconCtx.beginPath();
+    faviconCtx.roundRect(0, 0, size, size, 6);
+    faviconCtx.fill();
+
+    // Subtle border
+    faviconCtx.strokeStyle = 'rgba(255,255,255,0.25)';
+    faviconCtx.lineWidth = 1;
+    faviconCtx.stroke();
+
+    // Blood drop emoji
+    faviconCtx.font = '20px Arial';
+    faviconCtx.textAlign    = 'center';
+    faviconCtx.textBaseline = 'middle';
+    faviconCtx.fillText('🩸', size / 2, size / 2);
+
+    faviconLink.href = faviconCanvas.toDataURL('image/png');
+  }
+
+  // Init favicon as grey until data loads
+  updateFavicon(null);
+
+  // ── Timestamp parser ──────────────────────────────────────
   function parseLibreTimestamp(ts) {
-    // new Date() handles this format natively in most engines
     const d = new Date(ts);
     return isNaN(d) ? null : d;
   }
@@ -245,24 +317,27 @@
       return d && d.getTime() >= cutoff;
     });
 
-    const labels = filtered.map(p => {
-      const d = parseLibreTimestamp(p.Timestamp);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    });
+    const labels      = filtered.map(p => parseLibreTimestamp(p.Timestamp)
+      .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
     const values      = filtered.map(p => p.ValueInMgPerDl);
     const pointColors = values.map(glucoseColor);
 
+    // Dynamic gradient colour based on current reading
+    const grad = ctx.createLinearGradient(0, 0, 0, 200);
+    const currentVal = values[values.length - 1];
+    const baseColor  = currentVal ? glucoseColor(currentVal) : '#4CAF50';
+    grad.addColorStop(0, baseColor + '38');
+    grad.addColorStop(1, baseColor + '00');
+
     if (chart) {
       chart.data.labels = labels;
-      chart.data.datasets[0].data = values;
+      chart.data.datasets[0].data             = values;
+      chart.data.datasets[0].borderColor      = baseColor;
+      chart.data.datasets[0].backgroundColor  = grad;
       chart.data.datasets[0].pointBackgroundColor = pointColors;
       chart.update('none');
       return;
     }
-
-    const grad = ctx.createLinearGradient(0, 0, 0, 200);
-    grad.addColorStop(0, 'rgba(52,211,153,0.22)');
-    grad.addColorStop(1, 'rgba(52,211,153,0.00)');
 
     chart = new Chart(ctx, {
       type: 'line',
@@ -270,7 +345,7 @@
         labels,
         datasets: [{
           data: values,
-          borderColor: '#34d399',
+          borderColor: baseColor,
           borderWidth: 2,
           pointBackgroundColor: pointColors,
           pointRadius: values.length > 80 ? 0 : 3,
@@ -292,20 +367,20 @@
             borderWidth: 1,
             titleColor: '#94a3b8',
             bodyColor: '#e2e8f0',
-            titleFont: { family: 'Space Mono', size: 10 },
-            bodyFont: { family: 'Space Mono', size: 13 },
-            callbacks: { label: ctx => `${ctx.parsed.y} mg/dL` }
+            titleFont: { family: 'Arial', size: 10 },
+            bodyFont:  { family: 'Arial', size: 13 },
+            callbacks: { label: c => `${c.parsed.y} mg/dL` }
           }
         },
         scales: {
           x: {
-            ticks: { color:'#4b5563', font:{ family:'Space Mono', size:9 }, maxTicksLimit:8, maxRotation:0 },
+            ticks: { color:'#4b5563', font:{ family:'Arial', size:9 }, maxTicksLimit:8, maxRotation:0 },
             grid:   { color:'#1e2d40' },
             border: { color:'#1e2d40' }
           },
           y: {
             min: 40,
-            ticks: { color:'#4b5563', font:{ family:'Space Mono', size:9 }, stepSize:50 },
+            ticks: { color:'#4b5563', font:{ family:'Arial', size:9 }, stepSize:50 },
             grid:   { color:'#1e2d40' },
             border: { color:'#1e2d40' }
           }
@@ -315,16 +390,16 @@
         id: 'rangeBand',
         beforeDraw({ ctx, chartArea, scales }) {
           if (!chartArea) return;
-          const y70  = scales.y.getPixelForValue(70);
+          const y75  = scales.y.getPixelForValue(75);
           const y180 = scales.y.getPixelForValue(180);
           ctx.save();
-          ctx.fillStyle = 'rgba(52,211,153,0.06)';
-          ctx.fillRect(chartArea.left, y180, chartArea.width, y70 - y180);
+          ctx.fillStyle = 'rgba(76,175,80,0.06)';
+          ctx.fillRect(chartArea.left, y180, chartArea.width, y75 - y180);
           ctx.setLineDash([4, 4]);
           ctx.lineWidth = 1;
-          ctx.strokeStyle = 'rgba(56,189,248,0.35)';
-          ctx.beginPath(); ctx.moveTo(chartArea.left, y70);  ctx.lineTo(chartArea.right, y70);  ctx.stroke();
-          ctx.strokeStyle = 'rgba(249,115,22,0.35)';
+          ctx.strokeStyle = 'rgba(255,152,0,0.4)';
+          ctx.beginPath(); ctx.moveTo(chartArea.left, y75);  ctx.lineTo(chartArea.right, y75);  ctx.stroke();
+          ctx.strokeStyle = 'rgba(244,67,54,0.4)';
           ctx.beginPath(); ctx.moveTo(chartArea.left, y180); ctx.lineTo(chartArea.right, y180); ctx.stroke();
           ctx.setLineDash([]); ctx.restore();
         }
@@ -332,15 +407,13 @@
     });
   }
 
-  // ── Parse & render ────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────
   function updateUI(raw) {
-    // Support both the raw LibreView structure and any pre-formatted wrapper
     const measurement = raw?.data?.connection?.glucoseMeasurement ?? raw;
     const graphData   = raw?.data?.graphData ?? raw?.history ?? [];
 
     const val   = measurement.ValueInMgPerDl ?? measurement.value;
     const trend = TREND_MAP[measurement.TrendArrow] ?? measurement.trend ?? '→';
-
     const color = glucoseColor(val);
     const label = glucoseLabel(val);
 
@@ -351,13 +424,15 @@
     elTrend.textContent   = trend;
     elTrend.style.color   = color;
 
-    elBadge.textContent        = label.text;
-    elBadge.style.color        = label.color;
-    elBadge.style.borderColor  = label.color + '55';
-    elBadge.style.background   = label.color + '18';
-    elBadge.style.border       = `1px solid ${label.color}55`;
+    elBadge.textContent   = label.text;
+    elBadge.style.color   = label.color;
+    elBadge.style.border  = `1px solid ${label.color}55`;
+    elBadge.style.background = `${label.color}18`;
 
-    // Stats from graphData
+    // Update favicon with live value
+    updateFavicon(val);
+
+    // Stats
     const vals = graphData.map(p => p.ValueInMgPerDl ?? p.value).filter(Boolean);
     if (vals.length) {
       elAvg.textContent  = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
@@ -378,13 +453,13 @@
     try {
       const res = await fetch(API_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      updateUI(data);
+      updateUI(await res.json());
     } catch (err) {
       console.error('Fetch error:', err);
       elDot.className = 'error';
       elError.style.display = 'block';
       elUpdated.textContent = 'Failed to load';
+      updateFavicon(null);
     }
   }
 
