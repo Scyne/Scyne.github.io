@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cas' Blood Glucose</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0a0e17;
+      --surface: #111827;
+      --border:  #1e2d40;
+      --low:     #38bdf8;
+      --normal:  #34d399;
+      --high:    #f97316;
+      --urgent:  #ef4444;
+      --muted:   #4b5563;
+      --text:    #e2e8f0;
+      --sub:     #94a3b8;
+      --mono:    'Space Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 3rem;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sub);
+    }
+    #status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      display: inline-block;
+      margin-right: 0.5rem;
+      transition: background 0.4s;
+    }
+    #status-dot.live  { background: var(--normal); box-shadow: 0 0 6px var(--normal); animation: pulse 2s infinite; }
+    #status-dot.error { background: var(--urgent); }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+    #last-updated { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+
+    /* ── Reading card ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; }
+    .reading-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .reading-left  { display: flex; flex-direction: column; gap: 0.5rem; }
+    .reading-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub); }
+    .reading-value { font-family: var(--mono); font-size: 5.5rem; font-weight: 700; line-height: 1; color: var(--normal); transition: color 0.5s; letter-spacing: -0.02em; }
+    .reading-unit  { font-family: var(--mono); font-size: 0.8rem; color: var(--sub); letter-spacing: 0.05em; }
+    .reading-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1rem; }
+    .trend-arrow   { font-size: 3rem; line-height: 1; color: var(--normal); transition: color 0.5s; }
+    .range-badge   { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.75rem; border-radius: 4px; transition: all 0.5s; }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .stat-cell  { background: var(--surface); padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .stat-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .stat-value { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; color: var(--text); }
+    .stat-sub   { font-size: 0.7rem; color: var(--muted); }
+
+    /* ── Chart ── */
+    .chart-card { padding: 1.5rem 1.5rem 1rem; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .chart-title  { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sub); }
+    .chart-range-btns { display: flex; gap: 0.25rem; }
+    .range-btn {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+      padding: 0.25rem 0.6rem; border-radius: 4px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .range-btn.active, .range-btn:hover { border-color: var(--normal); color: var(--normal); background: rgba(52,211,153,0.08); }
+    .chart-wrap { position: relative; height: 200px; }
+    .range-legend { display: flex; gap: 1.25rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+    .legend-item  { display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: var(--muted); font-family: var(--mono); }
+    .legend-line  { width: 18px; height: 2px; border-radius: 1px; }
+
+    /* ── Skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, #1e2d4088 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      color: transparent !important;
+      user-select: none;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+
+    /* ── Error ── */
+    .error-msg { font-family: var(--mono); font-size: 0.8rem; color: var(--urgent); text-align: center; padding: 1rem; display: none; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <h1><span id="status-dot"></span>Cas' Blood Glucose</h1>
+    <span id="last-updated">—</span>
+  </header>
+
+  <div class="card reading-card">
+    <div class="reading-left">
+      <span class="reading-label">Current Reading</span>
+      <span class="reading-value skeleton" id="reading">---</span>
+      <span class="reading-unit">mg/dL</span>
+    </div>
+    <div class="reading-right">
+      <span class="trend-arrow" id="trend">—</span>
+      <span class="range-badge" id="range-badge">—</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-cell">
+      <span class="stat-label">Avg</span>
+      <span class="stat-value skeleton" id="avg">—</span>
+      <span class="stat-sub">mg/dL</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-label">High</span>
+      <span class="stat-value skeleton" id="high">—</span>
+      <span class="stat-sub">mg/dL</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-label">Low</span>
+      <span class="stat-value skeleton" id="low">—</span>
+      <span class="stat-sub">mg/dL</span>
+    </div>
+  </div>
+
+  <div class="card chart-card">
+    <div class="chart-header">
+      <span class="chart-title">Glucose History</span>
+      <div class="chart-range-btns">
+        <button class="range-btn" data-hours="3">3h</button>
+        <button class="range-btn active" data-hours="6">6h</button>
+        <button class="range-btn" data-hours="12">12h</button>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="glucoseChart"></canvas>
+    </div>
+    <div class="range-legend">
+      <div class="legend-item"><div class="legend-line" style="background:var(--urgent);opacity:0.6"></div>High &gt;180</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--normal);opacity:0.6"></div>Target 70–180</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--low);opacity:0.6"></div>Low &lt;70</div>
+    </div>
+  </div>
+
+  <div class="error-msg" id="error-msg">⚠ Unable to fetch glucose data. Retrying…</div>
+
+</div>
+<script>
+  const API_URL    = 'https://n8n.hive.scyne.com/webhook/glucose';
+  const REFRESH_MS = 60000;
+
+  const TREND_MAP = { 1:'↑', 2:'↗', 3:'→', 4:'↘', 5:'↓' };
+
+  let chart       = null;
+  let allHistory  = [];
+  let activeHours = 6;
+
+  const elReading = document.getElementById('reading');
+  const elTrend   = document.getElementById('trend');
+  const elBadge   = document.getElementById('range-badge');
+  const elAvg     = document.getElementById('avg');
+  const elHigh    = document.getElementById('high');
+  const elLow     = document.getElementById('low');
+  const elUpdated = document.getElementById('last-updated');
+  const elDot     = document.getElementById('status-dot');
+  const elError   = document.getElementById('error-msg');
+
+  // ── Helpers ──────────────────────────────────────────────
+  function glucoseColor(v) {
+    if (v < 70)  return '#38bdf8';
+    if (v > 180) return '#f97316';
+    return '#34d399';
+  }
+
+  function glucoseLabel(v) {
+    if (v < 54)  return { text: 'URGENT LOW',  color: '#ef4444' };
+    if (v < 70)  return { text: 'LOW',          color: '#38bdf8' };
+    if (v <= 180)return { text: 'IN RANGE',     color: '#34d399' };
+    if (v <= 250)return { text: 'HIGH',         color: '#f97316' };
+    return              { text: 'URGENT HIGH',  color: '#ef4444' };
+  }
+
+  // Parse the locale-string timestamps LibreView returns: "3/16/2026 4:32:01 AM"
+  function parseLibreTimestamp(ts) {
+    // new Date() handles this format natively in most engines
+    const d = new Date(ts);
+    return isNaN(d) ? null : d;
+  }
+
+  // ── Chart ─────────────────────────────────────────────────
+  function buildChart(history) {
+    const ctx    = document.getElementById('glucoseChart').getContext('2d');
+    const cutoff = Date.now() - activeHours * 3600 * 1000;
+
+    const filtered = history.filter(p => {
+      const d = parseLibreTimestamp(p.Timestamp);
+      return d && d.getTime() >= cutoff;
+    });
+
+    const labels = filtered.map(p => {
+      const d = parseLibreTimestamp(p.Timestamp);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    });
+    const values      = filtered.map(p => p.ValueInMgPerDl);
+    const pointColors = values.map(glucoseColor);
+
+    if (chart) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = values;
+      chart.data.datasets[0].pointBackgroundColor = pointColors;
+      chart.update('none');
+      return;
+    }
+
+    const grad = ctx.createLinearGradient(0, 0, 0, 200);
+    grad.addColorStop(0, 'rgba(52,211,153,0.22)');
+    grad.addColorStop(1, 'rgba(52,211,153,0.00)');
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          borderColor: '#34d399',
+          borderWidth: 2,
+          pointBackgroundColor: pointColors,
+          pointRadius: values.length > 80 ? 0 : 3,
+          pointHoverRadius: 5,
+          fill: true,
+          backgroundColor: grad,
+          tension: 0.4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#111827',
+            borderColor: '#1e2d40',
+            borderWidth: 1,
+            titleColor: '#94a3b8',
+            bodyColor: '#e2e8f0',
+            titleFont: { family: 'Space Mono', size: 10 },
+            bodyFont: { family: 'Space Mono', size: 13 },
+            callbacks: { label: ctx => `${ctx.parsed.y} mg/dL` }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color:'#4b5563', font:{ family:'Space Mono', size:9 }, maxTicksLimit:8, maxRotation:0 },
+            grid:   { color:'#1e2d40' },
+            border: { color:'#1e2d40' }
+          },
+          y: {
+            min: 40,
+            ticks: { color:'#4b5563', font:{ family:'Space Mono', size:9 }, stepSize:50 },
+            grid:   { color:'#1e2d40' },
+            border: { color:'#1e2d40' }
+          }
+        }
+      },
+      plugins: [{
+        id: 'rangeBand',
+        beforeDraw({ ctx, chartArea, scales }) {
+          if (!chartArea) return;
+          const y70  = scales.y.getPixelForValue(70);
+          const y180 = scales.y.getPixelForValue(180);
+          ctx.save();
+          ctx.fillStyle = 'rgba(52,211,153,0.06)';
+          ctx.fillRect(chartArea.left, y180, chartArea.width, y70 - y180);
+          ctx.setLineDash([4, 4]);
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = 'rgba(56,189,248,0.35)';
+          ctx.beginPath(); ctx.moveTo(chartArea.left, y70);  ctx.lineTo(chartArea.right, y70);  ctx.stroke();
+          ctx.strokeStyle = 'rgba(249,115,22,0.35)';
+          ctx.beginPath(); ctx.moveTo(chartArea.left, y180); ctx.lineTo(chartArea.right, y180); ctx.stroke();
+          ctx.setLineDash([]); ctx.restore();
+        }
+      }]
+    });
+  }
+
+  // ── Parse & render ────────────────────────────────────────
+  function updateUI(raw) {
+    // Support both the raw LibreView structure and any pre-formatted wrapper
+    const measurement = raw?.data?.connection?.glucoseMeasurement ?? raw;
+    const graphData   = raw?.data?.graphData ?? raw?.history ?? [];
+
+    const val   = measurement.ValueInMgPerDl ?? measurement.value;
+    const trend = TREND_MAP[measurement.TrendArrow] ?? measurement.trend ?? '→';
+
+    const color = glucoseColor(val);
+    const label = glucoseLabel(val);
+
+    [elReading, elAvg, elHigh, elLow].forEach(el => el.classList.remove('skeleton'));
+
+    elReading.textContent = val;
+    elReading.style.color = color;
+    elTrend.textContent   = trend;
+    elTrend.style.color   = color;
+
+    elBadge.textContent        = label.text;
+    elBadge.style.color        = label.color;
+    elBadge.style.borderColor  = label.color + '55';
+    elBadge.style.background   = label.color + '18';
+    elBadge.style.border       = `1px solid ${label.color}55`;
+
+    // Stats from graphData
+    const vals = graphData.map(p => p.ValueInMgPerDl ?? p.value).filter(Boolean);
+    if (vals.length) {
+      elAvg.textContent  = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+      elHigh.textContent = Math.max(...vals);
+      elLow.textContent  = Math.min(...vals);
+    }
+
+    allHistory = graphData;
+    buildChart(allHistory);
+
+    elUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', hour12:true })}`;
+    elDot.className = 'live';
+    elError.style.display = 'none';
+  }
+
+  // ── Fetch ─────────────────────────────────────────────────
+  async function fetchGlucose() {
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      updateUI(data);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      elDot.className = 'error';
+      elError.style.display = 'block';
+      elUpdated.textContent = 'Failed to load';
+    }
+  }
+
+  // ── Range buttons ─────────────────────────────────────────
+  document.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeHours = parseInt(btn.dataset.hours);
+      if (allHistory.length) buildChart(allHistory);
+    });
+  });
+
+  // ── Init ──────────────────────────────────────────────────
+  fetchGlucose();
+  setInterval(fetchGlucose, REFRESH_MS);
+</script>
+</body>
+</html>

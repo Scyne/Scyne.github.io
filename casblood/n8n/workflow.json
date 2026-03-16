@@ -1,0 +1,574 @@
+{
+  "name": "Cas Glucose API",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "glucose",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "edc6a584-bacc-4009-9acc-c6cec640d50d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        848
+      ],
+      "webhookId": "9e935802-1fcf-4d7a-9d0b-285da6d9691a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.libreview.io/llu/auth/login",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "product",
+              "value": "llu.android"
+            },
+            {
+              "name": "version",
+              "value": "4.16.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            },
+            {
+              "name": "cache-control",
+              "value": "no-cache"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "connection",
+              "value": "Keep-Alive"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"hidekiscyne@gmail.com\",\n  \"password\": \"hUrrir-vujfir-mirzy7\"\n}",
+        "options": {}
+      },
+      "id": "5274bcf2-603c-4226-bddd-542ab11bbe04",
+      "name": "LibreLinkUp Login",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3104,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "region-check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d18ea395-305a-4922-a74c-cdea6e1ae0a6",
+      "name": "Region Redirect?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://' + $node['LibreLinkUp Login'].json.data.redirect.us + '/llu/auth/login' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "product",
+              "value": "llu.android"
+            },
+            {
+              "name": "version",
+              "value": "4.16.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            },
+            {
+              "name": "cache-control",
+              "value": "no-cache"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "connection",
+              "value": "Keep-Alive"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"hidekiscyne@gmail.com\",\n  \"password\": \"hUrrir-vujfir-mirzy7\"\n}",
+        "options": {}
+      },
+      "id": "0a8c6bd2-ab53-4481-a84f-cecd9e73f18a",
+      "name": "Redirected Login",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3536,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "userId",
+              "stringValue": "={{ $json.data.user.id }}"
+            },
+            {
+              "name": "token",
+              "stringValue": "={{ $json.data.authTicket.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0c992a78-2410-4a87-aed5-6b291e9d560e",
+      "name": "Strip Login Data (direct)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        3536,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "userId",
+              "stringValue": "={{ $json.data.user.id }}"
+            },
+            {
+              "name": "token",
+              "stringValue": "={{ $json.data.authTicket.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa0f6a5a-48ac-41ee-9c86-c0fc2aa8a382",
+      "name": "Strip Login Data (redirect)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        3744,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "userId",
+              "stringValue": "={{ $json.userId }}"
+            },
+            {
+              "name": "token",
+              "stringValue": "={{ $json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "63c76bd0-294a-41f7-be35-4085dca14aab",
+      "name": "Merge Auth Paths",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        3744,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "65459c74-64d1-4dd7-8c49-b069aeb5169d",
+      "name": "Wait for Session",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        3936,
+        848
+      ],
+      "webhookId": "ba9b3d63-7b53-480f-b607-4849b02f2518"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pure JS SHA256 - no imports required\nfunction sha256(str) {\n  function rightRotate(value, amount) {\n    return (value >>> amount) | (value << (32 - amount));\n  }\n  const mathPow = Math.pow;\n  const maxWord = mathPow(2, 32);\n  let result = '';\n  const words = [];\n  const asciiBitLength = str.length * 8;\n  let hash = [];\n  let k = [];\n  let primeCounter = 0;\n  const isComposite = {};\n  for (let candidate = 2; primeCounter < 64; candidate++) {\n    if (!isComposite[candidate]) {\n      for (let i = candidate * candidate; i < 313; i += candidate) isComposite[i] = true;\n      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;\n      k[primeCounter++] = (mathPow(candidate, 1/3) * maxWord) | 0;\n    }\n  }\n  str += '\\x80';\n  while (str.length % 64 - 56) str += '\\x00';\n  for (let i = 0; i < str.length; i++) {\n    const j = str.charCodeAt(i);\n    if (j >> 8) return '';\n    words[i >> 2] |= j << ((3 - i) % 4) * 8;\n  }\n  words[words.length] = ((asciiBitLength / maxWord) | 0);\n  words[words.length] = (asciiBitLength | 0);\n  for (let j = 0; j < words.length;) {\n    const w = words.slice(j, j += 16);\n    const oldHash = hash.slice(0);\n    for (let i = 0; i < 64; i++) {\n      const w15 = w[i - 15], w2 = w[i - 2];\n      const a = hash[0], e = hash[4];\n      const temp1 = hash[7]\n        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))\n        + ((e & hash[5]) ^ (~e & hash[6]))\n        + k[i]\n        + (w[i] = (i < 16) ? w[i] : (\n            w[i - 16]\n            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))\n            + w[i - 7]\n            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))\n          ) | 0);\n      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))\n        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));\n      hash = [(temp1 + temp2) | 0].concat(hash);\n      hash[4] = (hash[4] + temp1) | 0;\n      hash.length = 8;\n    }\n    hash = hash.map((v, i) => (v + oldHash[i]) | 0);\n  }\n  hash.forEach(val => {\n    for (let i = 7; i >= 0; i--) {\n      result += ((val >>> (i * 4)) & 0xf).toString(16);\n    }\n  });\n  return result;\n}\n\nconst userId = String(items[0].json.userId);\nconst token = items[0].json.token;\nconst accountId = sha256(userId);\n\nreturn [{ json: { authToken: token, accountId } }];"
+      },
+      "id": "5a6529b7-9a8b-4d2c-b57e-c6457e723123",
+      "name": "Generate Account Hash",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4144,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.libreview.io/llu/connections",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $json.authToken }}"
+            },
+            {
+              "name": "Account-Id",
+              "value": "={{ $json.accountId }}"
+            },
+            {
+              "name": "product",
+              "value": "llu.android"
+            },
+            {
+              "name": "version",
+              "value": "4.16.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            },
+            {
+              "name": "cache-control",
+              "value": "no-cache"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "connection",
+              "value": "Keep-Alive"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ae5cf7e3-f2e1-4d48-ba05-bc2d7ad8c89a",
+      "name": "Get Connections",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4336,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const connections = items[0].json.data;\nconst cas = connections.find(conn => \n  conn.firstName?.toLowerCase().includes('cas') || \n  conn.lastName?.toLowerCase().includes('kindrot') ||\n  conn.firstName?.toLowerCase().includes('maxwell')\n);\n\nif (!cas) throw new Error('Patient Cas not found in connections');\n\nreturn [{\n  json: {\n    patientId: cas.patientId,\n    patientName: cas.firstName,\n    authToken: $node['Generate Account Hash'].json.authToken,\n    accountId: $node['Generate Account Hash'].json.accountId\n  }\n}];"
+      },
+      "id": "ed456fd7-dfbc-45ce-8fe0-d76285763664",
+      "name": "Find Cas & Carry Auth",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4544,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.libreview.io/llu/connections/{{ $json.patientId }}/graph",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $json.authToken }}"
+            },
+            {
+              "name": "Account-Id",
+              "value": "={{ $json.accountId }}"
+            },
+            {
+              "name": "product",
+              "value": "llu.android"
+            },
+            {
+              "name": "version",
+              "value": "4.16.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            },
+            {
+              "name": "cache-control",
+              "value": "no-cache"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "connection",
+              "value": "Keep-Alive"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d762bcbd-4e03-4db9-8466-3dc14c064c12",
+      "name": "Get Glucose Graph",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4736,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"value\": {{ $json.data.connection.glucoseMeasurement.ValueInMgPerDl }},\n  \"trend\": \"{{ ({1: '↑', 2: '↗', 3: '→', 4: '↘', 5: '↓'})[$json.data.connection.glucoseMeasurement.TrendArrow] || '→' }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"history\": {{ JSON.stringify($json.data.graphData.map(i => ({ timestamp: i.Timestamp, value: i.ValueInMgPerDl })).slice(-288)) }}\n}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://scyne.com"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b82c46be-3590-491f-a6e7-957b64e8befe",
+      "name": "Final Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        4944,
+        848
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "LibreLinkUp Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LibreLinkUp Login": {
+      "main": [
+        [
+          {
+            "node": "Region Redirect?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Region Redirect?": {
+      "main": [
+        [
+          {
+            "node": "Redirected Login",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Strip Login Data (direct)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redirected Login": {
+      "main": [
+        [
+          {
+            "node": "Strip Login Data (redirect)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip Login Data (redirect)": {
+      "main": [
+        [
+          {
+            "node": "Merge Auth Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip Login Data (direct)": {
+      "main": [
+        [
+          {
+            "node": "Merge Auth Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Auth Paths": {
+      "main": [
+        [
+          {
+            "node": "Wait for Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Session": {
+      "main": [
+        [
+          {
+            "node": "Generate Account Hash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Account Hash": {
+      "main": [
+        [
+          {
+            "node": "Get Connections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Connections": {
+      "main": [
+        [
+          {
+            "node": "Find Cas & Carry Auth",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Cas & Carry Auth": {
+      "main": [
+        [
+          {
+            "node": "Get Glucose Graph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Glucose Graph": {
+      "main": [
+        [
+          {
+            "node": "Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c5bb8ce6-a05e-492a-8b5c-e44b16bf4e9d",
+  "meta": {
+    "instanceId": "45095ac1b6f533f3cecb803348671ea1d959beaaa5bb099c37f42bdf79061bc3"
+  },
+  "id": "DPRyOEt6s95hq7kv",
+  "tags": []
+}
