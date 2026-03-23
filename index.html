@@ -1,458 +1,313 @@
-<!doctype html>
-<html>
-<head>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-11040240-2"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'UA-11040240-2');
-  </script>
+<!DOCTYPE html>
 
-  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <title>Ki Scyne</title>
-  <link rel="Shortcut Icon" href="/favicon.ico" type="image/x-icon" />
-  <meta http-equiv="pragma" content="no-cache" />
-  <meta name="robots" content="all" />
-  <meta name="MSSmartTagsPreventParsing" content="true" />
-  <meta http-equiv="imagetoolbar" content="false" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <style>
-    * { 
-      padding: 0; 
-      margin: 0; 
-      box-sizing: border-box;
-    }
-
-    body { 
-      background-color: #00000C; 
-      font-family: 'Helvetica', sans-serif;
-      color: #FFFFFF;
-      overflow-x: hidden;
-    }
-
-    .video-background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      z-index: -100;
-    }
-
-    .video-background iframe {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 177.77vh;
-      min-width: 100%;
-      min-height: 100%;
-      transform: translate(-50%, -50%);
-      aspect-ratio: 16/9;
-      pointer-events: none;
-    }
-
-    .scyne-logo {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 300px;
-      height: 80vh;
-      background-color: #FFFFFF;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 100;
-    }
-
-    .logo-text {
-      color: #00000C;
-      font-weight: bold;
-      font-size: 220px;
-      transform: rotate(90deg);
-      transform-origin: center;
-      letter-spacing: 2px;
-      line-height: 0.8;
-    }
-
-    .logo-text-mobile {
-      display: none;
-      color: #00000C;
-      transform: rotate(90deg);
-      font-weight: bold;
-      font-size: 150px;
-    }
-
-    .menu-dropdown {
-      position: absolute;
-      top: 0;
-      right: 310px;
-      background-color: rgba(0, 0, 153, 0.8);
-      border: 1px solid #8693AB;
-      backdrop-filter: blur(5px);
-      flex-direction: column;
-      width: 150px;
-      box-shadow: 0 0 15px rgba(4, 0, 245, 0.3);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
-    }
-
-    .menu-dropdown.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .menu-item {
-      padding: 12px 20px;
-      color: #FFFFFF;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border-bottom: 1px solid #8693AB;
-    }
-
-    .menu-item:hover {
-      background-color: #000099;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 200;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 12, 0.7);
-      backdrop-filter: blur(5px);
-    }
-
-    .modal-content {
-      background-color: #00000C;
-      margin: 10% auto;
-      padding: 0;
-      width: 70%;
-      max-width: 700px;
-      border: 1px solid #8693AB;
-      box-shadow: 0 0 25px rgba(4, 0, 245, 0.5);
-      animation-name: animatetop;
-      animation-duration: 0.4s;
-      position: relative;
-    }
-
-    .modal-header {
-      padding: 15px 20px;
-      background: #000099;
-      color: #FFFFFF;
-      border-bottom: 1px solid #8693AB;
-    }
-
-    .modal-header h2 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 400;
-      letter-spacing: 2px;
-    }
-
-    .modal-body {
-      padding: 20px;
-    }
-
-    .headshot {
-      float: right;
-      margin: 0 0 15px 15px;
-      max-width: 150px;
-      border: 2px solid #8693AB;
-    }
-
-    .close {
-      color: #FFFFFF;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      transition: all 0.2s;
-    }
-
-    .close:hover,
-    .close:focus {
-      color: #0400f5;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    @keyframes animatetop {
-      from {top: -300px; opacity: 0}
-      to {top: 0; opacity: 1}
-    }
-
-    a { 
-      color: #0400f5; 
-      font-weight: bold; 
-      text-decoration: none; 
-      border-bottom: 1px solid rgba(4, 0, 245, 0.3);
-      transition: all 0.2s ease;
-    }
-
-    a:hover { 
-      color: #000099; 
-      border-bottom: 1px solid #000099;
-    }
-
-    p {
-      margin-bottom: 15px;
-      line-height: 1.6;
-      color: #FFFFFF;
-    }
-
-    .links-list {
-      list-style-type: none;
-    }
-
-    .links-list li {
-      margin-bottom: 15px;
-    }
-
-    #cycling-service {
-      display: inline;
-      transition: opacity 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .cycling-fade {
-      opacity: 0.7;
-    }
-
-    @media (max-width: 767px) {
-      .scyne-logo {
-        height: 60vh;
-        width: 200px;
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700;900&amp;family=Inter:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface": "#00000C",
+              "surface-dim": "#00000C",
+              "on-secondary-container": "#8693AB",
+              "surface-bright": "#111224",
+              "surface-container-high": "#000099",
+              "on-error-container": "#ffdad6",
+              "secondary": "#000099",
+              "error-container": "#93000a",
+              "inverse-primary": "#0400f5",
+              "on-secondary": "#FFFFFF",
+              "surface-container-highest": "#000099",
+              "on-surface-variant": "#8693AB",
+              "surface-tint": "#0400f5",
+              "surface-variant": "#00000C",
+              "error": "#ffb4ab",
+              "surface-container": "#00000C",
+              "surface-container-lowest": "#00000C",
+              "tertiary": "#8693AB",
+              "primary-fixed": "#FFFFFF",
+              "primary-fixed-dim": "#8693AB",
+              "on-primary-fixed": "#00000C",
+              "tertiary-container": "#000099",
+              "secondary-fixed-dim": "#000099",
+              "secondary-fixed": "#0400f5",
+              "on-background": "#FFFFFF",
+              "on-tertiary-fixed": "#00000C",
+              "tertiary-fixed": "#8693AB",
+              "on-tertiary-fixed-variant": "#8693AB",
+              "on-tertiary-container": "#FFFFFF",
+              "on-primary-container": "#FFFFFF",
+              "inverse-on-surface": "#00000C",
+              "inverse-surface": "#FFFFFF",
+              "tertiary-fixed-dim": "#8693AB",
+              "on-tertiary": "#FFFFFF",
+              "surface-container-low": "#00000C",
+              "on-error": "#FFFFFF",
+              "on-primary-fixed-variant": "#0400f5",
+              "primary": "#0400f5",
+              "outline": "#8693AB",
+              "on-secondary-fixed-variant": "#0400f5",
+              "primary-container": "#000099",
+              "on-surface": "#FFFFFF",
+              "background": "#00000C",
+              "outline-variant": "#8693AB",
+              "on-secondary-fixed": "#FFFFFF",
+              "secondary-container": "#000099",
+              "on-primary": "#FFFFFF"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0rem", "lg": "0rem", "xl": "0rem", "full": "9999px"},
+          },
+        },
       }
-
-      .logo-text {
-        display: none;
-      }
-
-      .logo-text-mobile {
-        display: block;
-      }
-
-      .menu-dropdown {
-        right: 210px;
-        width: 120px;
-      }
-
-      .modal-content {
-        width: 90%;
-        margin: 20% auto;
-      }
-
-      .headshot {
-        float: none;
-        display: block;
-        margin: 0 auto 15px auto;
-        max-width: 120px;
-      }
-    }
-  </style>
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .video-docker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            background: #00000C;
+        }
+        .video-docker iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 177.77vh;
+            min-width: 100%;
+            min-height: 100%;
+            transform: translate(-50%, -50%);
+            aspect-ratio: 16/9;
+            pointer-events: none;
+        }
+        @media (max-aspect-ratio: 16/9) {
+            .video-docker iframe { width: 177.78vh; }
+        }
+        .text-vertical {
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+        }
+        .glass-panel {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid #8693AB;
+        }
+        #cycling-service {
+            transition: opacity 0.2s ease;
+        }
+        .cycling-fade {
+            opacity: 0.7;
+        }
+        #about-modal, #links-modal {
+            display: none;
+        }
+        #about-modal.active, #links-modal.active {
+            display: flex;
+        }
+    </style>
 </head>
+<body class="bg-surface text-on-surface font-body overflow-hidden">
+<!-- Video Background Container -->
+<div class="video-docker">
+<iframe
+  frameborder="0"
+  allow="autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+  src="https://www.youtube.com/embed/zdPbg3Ji6QM?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&playlist=zdPbg3Ji6QM&mute=1&playsinline=1&modestbranding=1">
+</iframe>
+<div class="absolute inset-0 bg-gradient-to-t from-surface/80 via-transparent to-surface/40"></div>
+</div>
+<!-- Top Navigation Shell -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-8 py-6">
+<div></div>
+<nav class="hidden md:flex items-center gap-12">
+<!-- Nav links removed per request -->
+</nav>
+<button class="text-[#0400f5] hover:scale-95 duration-200 ease-in-out">
+<span class="material-symbols-outlined text-4xl" data-icon="menu">menu</span>
+</button>
+</header>
+<!-- Side Navigation Shell -->
+<aside class="fixed right-0 top-0 h-screen flex flex-col items-center py-12 z-[60] w-20 bg-[#00000C]/90 backdrop-blur-xl border-l border-[#8693AB]/20 shadow-[0_0_40px_rgba(4,0,245,0.1)]">
+<div class="mt-8 mb-auto flex justify-center w-full">
+<h1 class="text-4xl font-black text-[#0400f5] text-vertical rotate-180 font-headline uppercase tracking-widest">SCYNE</h1>
+</div>
+<div class="flex flex-col gap-10 items-center mt-auto">
+<button class="text-[#0400f5] font-bold hover:scale-110 transition-transform duration-500 group" id="about-side-btn">
+<span class="material-symbols-outlined text-3xl" data-icon="person">person</span>
+</button>
+<button class="text-[#8693AB] opacity-50 hover:opacity-100 hover:text-[#0400f5] hover:scale-110 transition-transform duration-500 group" id="links-side-btn">
+<span class="material-symbols-outlined text-3xl" data-icon="share">share</span>
+</button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="relative h-screen w-full flex items-center justify-center px-8 md:pr-28">
+<!-- About Modal -->
+<div class="relative z-10 w-full max-w-5xl glass-panel p-1 md:p-12 overflow-hidden shadow-2xl" id="about-modal">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+<div class="md:col-span-5 relative group">
+<div class="absolute -inset-4 bg-[#0400f5]/20 blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700"></div>
+<div class="relative overflow-hidden bg-surface-container-high border border-[#8693AB]/20">
+<img alt="Ki Scyne Profile Headshot" class="w-full aspect-square object-cover transition-all duration-1000 scale-105 hover:scale-100" src="https://lh3.googleusercontent.com/aida/ADBb0uhOFgeGl1IXfgxmsFWiXof2WWLogmZBPx1Smp16XkRohXVZko1D3EmEfAxyUoQv0FS0DDql_JULVU79AlvQsilA3vNHRHke50vJmu1qnLq8u-hJ_WhaIeq31b1zazlQIXkdZbCKyAmaA-D5DRRPYSUOFI1JS_C3Z-82MqnO8j9yZclGj1Fdmx6Jyr4V6z8lZFyIOC77vSFK-wflae1vUxypCr68GF-Aws5GBYaiE9p0Cj7hTCXcx6HoIyHFsIYUCI5bJXRFQBbZ"/>
+<div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+</div>
+</div>
+<div class="md:col-span-7 flex flex-col h-full justify-center relative">
+<button class="absolute -top-4 -right-4 md:top-0 md:right-0 text-[#8693AB] hover:text-[#FFFFFF] transition-colors" id="close-about">
+<span class="material-symbols-outlined text-4xl" data-icon="close">close</span>
+</button>
+<header class="mb-8">
+<h2 class="font-headline font-black text-6xl md:text-8xl text-white tracking-tighter leading-none mb-6">About</h2>
+</header>
+<div class="space-y-6 text-[#8693AB] leading-relaxed text-sm md:text-base max-w-xl font-body">
+<p>Ki Scyne is the aspiring personality behind <a class="text-primary hover:underline font-bold" href="http://twitch.scyne.com">The Scynewave Show</a>. Ki is also one of the Volunteer Content Directors at <a class="text-primary hover:underline font-bold" href="https://c1024.tv/">Construct 1024</a>, a public VR media network. Ki is a magician, a proud member of the <a class="text-primary hover:underline font-bold" href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a class="text-primary hover:underline font-bold" href="https://twitter.com/shwood">Brian Brushwood's</a> legitimately illegitimate black child.</p>
+<p>Ki is <a class="text-primary hover:underline font-bold" href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Androgyne</a> (Ey/Em/Eir), writes in 300 characters at <a class="text-primary hover:underline font-bold" href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all eir music on <a class="text-primary hover:underline font-bold" href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a class="text-primary hover:underline font-bold" href="/cdn-cgi/l/email-protection#014a68415262786f642f626e6c"><span class="__cf_email__" data-cfemail="c883a1889babb1a6ade6aba7a5">[email&#160;protected]</span></a>.</p>
+<p>Ki is lives with their loving family in Albany, Ga. They have six cats whom are good babies named Galen, Marshmallow, Muffin-luffin, Skrungle, Han, and Chewie, and two beautiful puppers named <a class="text-primary hover:underline font-bold" href="https://youtu.be/NnTC_F6beps">Xena</a> and <a class="text-primary hover:underline font-bold" href="https://youtu.be/_Z4iqxHuydU">Bear-Bear</a>. All of them are perfect in every way.</p>
+</div>
+<div class="mt-12 pt-8 border-t border-[#8693AB]/10 flex items-center justify-between">
+<a class="group cursor-pointer" href="https://twitch.scyne.com/" id="cycling-link">
+<span class="text-[#0400f5] font-headline font-bold text-2xl md:text-3xl lowercase tracking-tighter group-hover:text-primary transition-colors" id="cycling-service">twitch</span>
+<span class="text-white font-headline font-bold text-2xl md:text-3xl tracking-tighter">.scyne.com</span>
+<div class="h-0.5 w-0 group-hover:w-full bg-[#0400f5] transition-all duration-500"></div>
+</a>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-[#0400f5]/40 hover:text-[#0400f5] transition-colors cursor-pointer" data-icon="north_east">north_east</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Links Modal -->
+<div class="relative z-10 w-full max-w-2xl glass-panel p-8 md:p-12 overflow-hidden shadow-2xl" id="links-modal">
+<div class="flex flex-col relative">
+<button class="absolute -top-4 -right-4 md:top-0 md:right-0 text-[#8693AB] hover:text-[#FFFFFF] transition-colors" id="close-links">
+<span class="material-symbols-outlined text-4xl" data-icon="close">close</span>
+</button>
+<header class="mb-8">
+<h2 class="font-headline font-black text-6xl md:text-8xl text-white tracking-tighter leading-none mb-6">Links</h2>
+</header>
+<ul class="space-y-6">
+<li><a class="text-[#0400f5] font-headline font-bold text-3xl md:text-4xl hover:underline" href="https://discord.gg/construct-1024-vrchat-rollthered-762908352493256714">Construct 1024</a></li>
+<li><a class="text-[#0400f5] font-headline font-bold text-3xl md:text-4xl hover:underline" href="http://twitch.scyne.com">Twitch</a></li>
+<li><a class="text-[#0400f5] font-headline font-bold text-3xl md:text-4xl hover:underline" href="https://bsky.app/profile/scyne.com">Bluesky</a></li>
+<li><a class="text-[#0400f5] font-headline font-bold text-3xl md:text-4xl hover:underline" href="/cdn-cgi/l/email-protection#511a38110232283f347f323e3c">Email</a></li>
+</ul>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="fixed bottom-0 w-full flex justify-between px-8 py-4 z-40 bg-transparent">
+<div class="font-body text-[10px] uppercase tracking-[0.2em] text-[#8693AB]">
+            © 2026 SCYNE.
+        </div>
+<div class="flex gap-8">
+<!-- Footer links removed per request -->
+</div>
+</footer>
+<!-- Background Decoration -->
+<div class="fixed bottom-0 left-0 w-full h-[307px] pointer-events-none z-0 opacity-40">
+<div class="w-full h-full bg-gradient-to-t from-[#0400f5]/10 to-transparent blur-3xl"></div>
+</div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+        $(document).ready(function() {
+            const socialPlatforms = [
+                'twitch', 'steam', 'discord', 'snapchat', 'instagram', 'twitter', 
+                'bluesky', 'youtube', 'tiktok', 'facebook', 'linkedin', 'reddit',
+                'mastodon', 'threads', 'pinterest', 'spotify', 'apple', 'github',
+                'dribbble', 'behance', 'medium', 'substack', 'patreon', 'ko-fi'
+            ];
 
-<body>
-  <!-- Video Background -->
-  <div class="video-background">
-    <iframe 
-      src="https://www.youtube.com/embed/zdPbg3Ji6QM?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&playlist=zdPbg3Ji6QM&mute=1&playsinline=1&enablejsapi=1&modestbranding=1&origin=scyne.com"
-      frameborder="0" 
-      allowfullscreen 
-      allow="autoplay; encrypted-media">
-    </iframe>
-  </div>
+            let currentIndex = 0;
+            let cyclingTimer;
 
-  <!-- SCYNE Logo -->
-  <div class="scyne-logo">
-    <span class="logo-text">SCYNE</span>
-    <span class="logo-text-mobile">SCYNE</span>
-  </div>
+            function cyclePlatform() {
+                const cyclingElement = $('#cycling-service');
+                const linkElement = $('#cycling-link');
+                cyclingElement.addClass('cycling-fade');
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % socialPlatforms.length;
+                    const platform = socialPlatforms[currentIndex];
+                    cyclingElement.text(platform);
+                    linkElement.attr('href', 'https://' + platform + '.scyne.com/');
+                    cyclingElement.removeClass('cycling-fade');
+                }, 100);
+            }
 
-  <!-- Menu Dropdown -->
-  <div class="menu-dropdown">
-    <div class="menu-item" id="about-trigger">About</div>
-    <div class="menu-item" id="projects-trigger">Projects</div>
-    <div class="menu-item" id="links-trigger">Links</div>
-  </div>
+            function startCycling() {
+                if (cyclingTimer) clearInterval(cyclingTimer);
+                cyclingTimer = setInterval(cyclePlatform, 500);
+            }
 
-  <!-- About Modal -->
-  <div id="about-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="close">&times;</span>
-        <h2>About</h2>
-      </div>
-      <div class="modal-body">
-        <img src="WavesHeadshot.png" alt="Ki Scyne" class="headshot">
-        <p>Ki Scyne is the aspiring personality behind <a href="http://twitch.scyne.com">The Scynewave Show</a>. Ki is also one of the Volunteer Content Directors at <a href="https://c1024.tv/">Construct 1024</a>, a public VR media network. Ki is a magician, a proud member of the <a href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a href="https://twitter.com/shwood">Brian Brushwood's</a> legitimately illegitimate black child.</p>
-        <p>Ki is <a href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Androgyne</a> (Ey/Em/Eir), writes in 300 characters at <a href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all eir music on <a href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a href="mailto:Ki@Scyne.com">Ki@Scyne.com</a>.</p>
-        <p>Ki is polyamorus, living with the best Husband in the world and eir husband's other spouce in Albany, Ga. They have six cats whom are good babies named Galen, Marshmallow, Muffin-luffin, Skrungle, Han, and Chewie, and two beautiful puppers named <a href="https://youtu.be/NnTC_F6beps">Xena</a> and <a href="https://youtu.be/_Z4iqxHuydU">Bear-Bear</a>. All of them are perfect in every way.</p>
-        <p>You can find em on the internet by going entering url <a href="https://scyne.com/" id="cycling-link"><span id="cycling-service">twitch</span>.Scyne.com</a></p>
-      </div>
-    </div>
-  </div>
+            function stopCycling() {
+                if (cyclingTimer) clearInterval(cyclingTimer);
+            }
 
-  <!-- Links Modal -->
-  <div id="links-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="close">&times;</span>
-        <h2>Links</h2>
-      </div>
-      <div class="modal-body">
-        <ul class="links-list">
-          <li><a href="https://discord.gg/construct-1024-vrchat-rollthered-762908352493256714">Construct 1024</a></li>
-          <li><a href="http://twitch.scyne.com">Twitch</a></li>
-          <li><a href="https://bsky.app/profile/scyne.com">Bluesky</a></li>
-          <li><a href="mailto:Ki@Scyne.com">Email</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
+            // Modal Logic
+            const aboutModal = $('#about-modal');
+            const linksModal = $('#links-modal');
+            const aboutBtn = $('#about-side-btn');
+            const linksBtn = $('#links-side-btn');
+            const closeAbout = $('#close-about');
+            const closeLinks = $('#close-links');
 
-  <!-- Projects Modal -->
-  <div id="projects-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="close">&times;</span>
-        <h2>Projects</h2>
-      </div>
-      <div class="modal-body">
-        <p>Projects coming soon...</p>
-      </div>
-    </div>
-  </div>
+            aboutBtn.on('click', function(e) {
+                e.preventDefault();
+                linksModal.removeClass('active');
+                aboutModal.addClass('active');
+                startCycling();
+            });
 
-  <!-- JavaScript -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script>
-    $(document).ready(function() {
-      let menuTimer;
-      const menuHoverDelay = 1000; // 1 second delay
-      let cyclingTimer;
+            linksBtn.on('click', function(e) {
+                e.preventDefault();
+                aboutModal.removeClass('active');
+                stopCycling();
+                linksModal.addClass('active');
+            });
 
-      // Cycling link functionality
-      const socialPlatforms = [
-        'twitch', 'steam', 'discord', 'snapchat', 'instagram', 'twitter', 
-        'bluesky', 'youtube', 'tiktok', 'facebook', 'linkedin', 'reddit',
-        'mastodon', 'threads', 'pinterest', 'spotify', 'apple', 'github',
-        'dribbble', 'behance', 'medium', 'substack', 'patreon', 'ko-fi'
-      ];
+            closeAbout.on('click', function() {
+                aboutModal.removeClass('active');
+                stopCycling();
+            });
 
-      let currentIndex = 0;
+            closeLinks.on('click', function() {
+                linksModal.removeClass('active');
+            });
 
-      function cyclePlatform() {
-        const cyclingElement = $('#cycling-service');
-        const linkElement = $('#cycling-link');
-
-        // Add fade effect
-        cyclingElement.addClass('cycling-fade');
-
-        setTimeout(() => {
-          // Move to next platform
-          currentIndex = (currentIndex + 1) % socialPlatforms.length;
-          const platform = socialPlatforms[currentIndex];
-
-          // Update text and href - ensure no extra spaces
-          cyclingElement.text(platform);
-          linkElement.attr('href', 'https://' + platform + '.scyne.com/');
-
-          // Remove fade effect
-          cyclingElement.removeClass('cycling-fade');
-        }, 100); // Brief fade duration
-      }
-
-      function startCycling() {
-        if (cyclingTimer) {
-          clearInterval(cyclingTimer);
-        }
-        // Cycle every 500ms for much faster animation
-        cyclingTimer = setInterval(cyclePlatform, 500);
-      }
-
-      function stopCycling() {
-        if (cyclingTimer) {
-          clearInterval(cyclingTimer);
-          cyclingTimer = null;
-        }
-      }
-
-      // Desktop hover logic
-      function setupDesktopMenu() {
-        const menuArea = $(".scyne-logo, .menu-dropdown");
-
-        menuArea.on("mouseenter", function() {
-          clearTimeout(menuTimer);
-          $(".menu-dropdown").addClass("visible");
+            // Close on background click
+            $(document).on('click', function(e) {
+                if (aboutModal.hasClass('active') && !$(e.target).closest('#about-modal').length && !$(e.target).closest('#about-side-btn').length) {
+                    aboutModal.removeClass('active');
+                    stopCycling();
+                }
+                if (linksModal.hasClass('active') && !$(e.target).closest('#links-modal').length && !$(e.target).closest('#links-side-btn').length) {
+                    linksModal.removeClass('active');
+                }
+            });
         });
-
-        menuArea.on("mouseleave", function(e) {
-          // Only hide if leaving the combined menu area
-          if (!$(e.relatedTarget).closest('.scyne-logo, .menu-dropdown').length) {
-            menuTimer = setTimeout(() => {
-              $(".menu-dropdown").removeClass("visible");
-            }, menuHoverDelay);
-          }
-        });
-      }
-
-      // Mobile click logic
-      function setupMobileMenu() {
-        $(".scyne-logo").click(() => {
-          $(".menu-dropdown").toggleClass("visible");
-        });
-      }
-
-      // Modal controls
-      const handleModals = () => {
-        $(".menu-item").click(function() {
-          const target = $(this).attr('id').replace('-trigger', '-modal');
-          $("#" + target).show();
-          $(".menu-dropdown").removeClass("visible");
-
-          // Start cycling when about modal opens
-          if (target === 'about-modal') {
-            startCycling();
-          }
-        });
-
-        $(".close, .modal").click(function(e) {
-          if ($(e.target).is(".modal, .close")) {
-            $(".modal").hide();
-            // Stop cycling when modal closes
-            stopCycling();
-          }
-        });
-      };
-
-      // Initial setup
-      if (window.innerWidth > 767) {
-        setupDesktopMenu();
-      } else {
-        setupMobileMenu();
-      }
-      handleModals();
-
-      // Window resize handler
-      $(window).resize(() => {
-        $(".menu-dropdown").removeClass("visible");
-        if (window.innerWidth > 767) {
-          setupDesktopMenu();
-        } else {
-          setupMobileMenu();
-        }
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>
