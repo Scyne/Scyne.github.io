@@ -1,0 +1,212 @@
+{
+  "name": "PsyKAM — POST Event",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://track.customer.io/api/v1/customers/{{ $json.body.id }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic MGQ2ZTcyZWI2OTM3OWUzYjE1NjU6ZTI0MTVmZGFiYzFmZDY1NDNjMTA="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ name: $json.body.event_name, data: $json.body.attributes }) }}",
+        "options": {}
+      },
+      "id": "624ee8c5-9dd0-450f-83ac-ed17c28dc2c3",
+      "name": "HTTP — Track Event in Customer.io",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        304,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cdp.customer.io/v1/track",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic YmI4MTNiYjZhYjMyOTEyZmJjMGQ6"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ userId: String($json.body.id), event: $json.body.event_name, properties: $json.body.attributes }) }}",
+        "options": {}
+      },
+      "id": "8f699806-a788-4833-a623-908ed211735e",
+      "name": "HTTP — Dispatch via Pipelines API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        304,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "psykam-event",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "24143807-162e-4f6e-bb6f-28bcaf8da60f",
+      "name": "Webhook — POST Event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -64
+      ],
+      "webhookId": "psykam-post-event-v1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"PsyKAM alert dispatched successfully\", \"event\": \"psykam_alert\", \"api\": \"pipelines\" }",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "f7241a48-e298-466e-8d40-3302e73f6e90",
+      "name": "Respond — 200 OK Success (Pipelines)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"message\": \"PsyKAM alert dispatched successfully\", \"event\": \"psykam_alert\", \"api\": \"track\" }",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e7e8aae2-8661-4160-bc37-e2cde8d5b938",
+      "name": "Respond — 200 OK Success (Track)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        608,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## API MODE\n\nBoth the Pipelines and Track APIs are setup in this Workflow. Change the trigger connection to switch.",
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "3a6b4400-c2d4-44a5-ad67-d38e8a2ed601",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP — Track Event in Customer.io": {
+      "main": [
+        [
+          {
+            "node": "Respond — 200 OK Success (Track)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Dispatch via Pipelines API": {
+      "main": [
+        [
+          {
+            "node": "Respond — 200 OK Success (Pipelines)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook — POST Event": {
+      "main": [
+        [
+          {
+            "node": "HTTP — Dispatch via Pipelines API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a17c51f5-eefd-4c45-9f96-2db993c7e42b",
+  "meta": {
+    "instanceId": "45095ac1b6f533f3cecb803348671ea1d959beaaa5bb099c37f42bdf79061bc3"
+  },
+  "id": "L7v4Q6CzBufQgUBF",
+  "tags": [
+    {
+      "updatedAt": "2026-03-21T06:18:40.167Z",
+      "createdAt": "2026-03-21T06:18:40.167Z",
+      "id": "n5P7Mls34aqXgUUr",
+      "name": "psykam"
+    }
+  ]
+}

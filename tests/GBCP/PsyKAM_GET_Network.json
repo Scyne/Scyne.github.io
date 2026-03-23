@@ -1,0 +1,232 @@
+{
+  "name": "PsyKAM — GET Network",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "get-psykam-network",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "62d64502-a782-42f8-9ae2-c55f5683f2d0",
+      "name": "Webhook — GET Network",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -16
+      ],
+      "webhookId": "psykam-get-network-v1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.customer.io/v1/customers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fa20b8946e8f008c56d2748337550d7a"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"filter\": {\n    \"and\": [\n      {\n        \"attribute\": {\n          \"field\": \"has_psykam\",\n          \"operator\": \"eq\",\n          \"value\": true\n        }\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "2b3c0a13-ff03-477c-8e1d-a195acf355b9",
+      "name": "HTTP — Filter PsyKAM Owners",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1456,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "identifiers",
+        "options": {}
+      },
+      "id": "a132afd7-7907-452e-babd-ae1925ad9784",
+      "name": "Split Out — One Per Customer",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.customer.io/v1/customers/{{ $json.id }}/attributes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fa20b8946e8f008c56d2748337550d7a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1eb1644-b103-4336-8962-ac9ac737cb78",
+      "name": "HTTP — Fetch Full Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1968,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "1f20ae09-8bb0-4cd0-875a-0e1a4989e22f",
+      "name": "Aggregate — Collect All Profiles",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// After Aggregate, n8n wraps all items into a single { data: [...] } object.\n// Each element of data is one GET /attributes response: { customer: { id, attributes: {...} } }\nconst raw = $input.first().json.data;\n\nconst results = raw.map(item => {\n  const customer = item.customer || {};\n  return {\n    id:         customer.id,\n    attributes: customer.attributes || {}\n  };\n});\n\nreturn [{ json: { results } }];"
+      },
+      "id": "d95f0b3f-7916-4f95-890f-1ce389917937",
+      "name": "Code — Shape Results for Frontend",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.results }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "0f42cd37-5bc6-4483-991b-96410bfa4456",
+      "name": "Respond — Return Results Array",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2752,
+        -16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook — GET Network": {
+      "main": [
+        [
+          {
+            "node": "HTTP — Filter PsyKAM Owners",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Filter PsyKAM Owners": {
+      "main": [
+        [
+          {
+            "node": "Split Out — One Per Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out — One Per Customer": {
+      "main": [
+        [
+          {
+            "node": "HTTP — Fetch Full Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Fetch Full Profile": {
+      "main": [
+        [
+          {
+            "node": "Aggregate — Collect All Profiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate — Collect All Profiles": {
+      "main": [
+        [
+          {
+            "node": "Code — Shape Results for Frontend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code — Shape Results for Frontend": {
+      "main": [
+        [
+          {
+            "node": "Respond — Return Results Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "47b2be18-e5c8-4812-9b46-2af1714556ce",
+  "meta": {
+    "instanceId": "45095ac1b6f533f3cecb803348671ea1d959beaaa5bb099c37f42bdf79061bc3"
+  },
+  "id": "2FlcEg0fOdcYVN7i",
+  "tags": [
+    {
+      "updatedAt": "2026-03-21T06:18:40.167Z",
+      "createdAt": "2026-03-21T06:18:40.167Z",
+      "id": "n5P7Mls34aqXgUUr",
+      "name": "psykam"
+    }
+  ]
+}
