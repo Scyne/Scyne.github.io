@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────
+# scyne.com subdomain redirect records
+# Generated: Thu Mar 26 18:47:25 EDT 2026
+# ─────────────────────────────────────────────────────────
+
+# ── WORKING REDIRECTS ────────────────────────────────────
+https://twitch.scyne.com/  →  https://www.twitch.tv/scynewave
+https://discord.scyne.com/  →  https://discord.com/invite/bYhEbPt
+https://snapchat.scyne.com/  →  https://www.snapchat.com:443/@scyne
+https://instagram.scyne.com/  →  https://www.instagram.com/eionscyne
+
+# ── USER-SUPPLIED FIXES ──────────────────────────────────
+https://steam.scyne.com/  →  https://steamcommunity.com/id/scyne/
+https://twitter.scyne.com/  →  https://x.com/KiScyne
+https://bluesky.scyne.com/  →  https://bsky.app/profile/scyne.com
+https://youtube.scyne.com/  →  https://www.youtube.com/@scynewave
+https://tiktok.scyne.com/  →  https://www.tiktok.com/@kiscyne
+https://linkedin.scyne.com/  →  https://www.linkedin.com/in/scyne/
+https://reddit.scyne.com/  →  https://www.reddit.com/user/Scyne/
+https://threads.scyne.com/  →  https://www.threads.com/@kiscyne
+https://github.scyne.com/  →  https://github.com/Scyne
+https://ko-fi.scyne.com/  →  https://ko-fi.com/scyne
+
+# ── OMITTED (no redirect) ────────────────────────────────
+# https://facebook.scyne.com/  (omitted)
+# https://mastodon.scyne.com/  (omitted)
+# https://pinterest.scyne.com/  (omitted)
+# https://spotify.scyne.com/  (omitted)
+# https://apple.scyne.com/  (omitted)
+# https://dribbble.scyne.com/  (omitted)
+# https://behance.scyne.com/  (omitted)
+# https://medium.scyne.com/  (omitted)
+# https://substack.scyne.com/  (omitted)
+# https://patreon.scyne.com/  (omitted)

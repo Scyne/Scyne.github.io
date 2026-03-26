@@ -163,7 +163,6 @@
 <header class="fixed top-0 w-full z-50 flex justify-between items-center px-8 py-6">
   <div></div>
   <nav class="hidden md:flex items-center gap-12"></nav>
-  <!-- Burger only on mobile -->
   <button class="md:hidden text-[#0400f5] hover:scale-95 duration-200 ease-in-out">
     <span class="material-symbols-outlined text-4xl">menu</span>
   </button>
@@ -226,8 +225,8 @@
           </header>
           <div class="space-y-4 md:space-y-6 text-[#8693AB] leading-relaxed text-sm md:text-base font-body">
             <p>Ki Scyne is the aspiring personality behind <a class="text-primary hover:underline font-bold" href="http://twitch.scyne.com">The Scynewave Show</a>. Ki is also one of the Volunteer Content Directors at <a class="text-primary hover:underline font-bold" href="https://c1024.tv/">Construct 1024</a>, a public VR media network. Ki is a magician, a proud member of the <a class="text-primary hover:underline font-bold" href="https://www.twitch.tv/team/diamondclub">DiamondClub Stream team</a> and is <a class="text-primary hover:underline font-bold" href="https://twitter.com/shwood">Brian Brushwood's</a> legitimately illegitimate black child.</p>
-            <p>Ki is <a class="text-primary hover:underline font-bold" href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Androgyne</a> (Ey/Em/Eir), writes in 300 characters at <a class="text-primary hover:underline font-bold" href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all eir music on <a class="text-primary hover:underline font-bold" href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a class="text-primary hover:underline font-bold" href="/cdn-cgi/l/email-protection#014a68415262786f642f626e6c"><span class="__cf_email__" data-cfemail="c883a1889babb1a6ade6aba7a5">[email&#160;protected]</span></a>.</p>
-            <p>Ki is polyamorus, living with the best Husband in the world and eir husband's other spouce in Albany, Ga. They have six cats whom are good babies named Galen, Marshmallow, Muffin-luffin, Skrungle, Han, and Chewie, and two beautiful puppers named <a class="text-primary hover:underline font-bold" href="https://youtu.be/NnTC_F6beps">Xena</a> and <a class="text-primary hover:underline font-bold" href="https://youtu.be/_Z4iqxHuydU">Bear-Bear</a>. All of them are perfect in every way.</p>
+            <p>Ki is <a class="text-primary hover:underline font-bold" href="https://www.youtube.com/watch?v=7pvLDHFCEWk">Androgyne</a> (Ey/Em/Eir), writes in 300 characters at <a class="text-primary hover:underline font-bold" href="https://bsky.app/profile/scyne.com">@scyne.com on Bluesky</a>, listens to all eir music on <a class="text-primary hover:underline font-bold" href="https://itunes.apple.com/profile/Scyne">Apple Music</a>, and answers the occasional question on <a class="text-primary hover:underline font-bold" href="mailto:Ki@Scyne.com">Ki@Scyne.com</a>.</p>
+            <p>Ki lives with eir family in Albany, Ga. They have six cats whom are good babies named Galen, Marshmallow, Muffin-luffin, Skrungle, Han, and Chewie, and two beautiful puppers named <a class="text-primary hover:underline font-bold" href="https://youtu.be/NnTC_F6beps">Xena</a> and <a class="text-primary hover:underline font-bold" href="https://youtu.be/_Z4iqxHuydU">Bear-Bear</a>. All of them are perfect in every way.</p>
           </div>
           <div class="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-[#8693AB]/10 flex items-center justify-between">
             <a class="group cursor-pointer" href="https://twitch.scyne.com/" id="cycling-link">
@@ -259,7 +258,7 @@
           <li><a class="text-[#0400f5] font-headline font-bold text-2xl md:text-4xl hover:underline" href="https://discord.gg/construct-1024-vrchat-rollthered-762908352493256714">Construct 1024</a></li>
           <li><a class="text-[#0400f5] font-headline font-bold text-2xl md:text-4xl hover:underline" href="http://twitch.scyne.com">Twitch</a></li>
           <li><a class="text-[#0400f5] font-headline font-bold text-2xl md:text-4xl hover:underline" href="https://bsky.app/profile/scyne.com">Bluesky</a></li>
-          <li><a class="text-[#0400f5] font-headline font-bold text-2xl md:text-4xl hover:underline" href="/cdn-cgi/l/email-protection#511a38110232283f347f323e3c">Email</a></li>
+          <li><a class="text-[#0400f5] font-headline font-bold text-2xl md:text-4xl hover:underline" href="mailto:Ki@Scyne.com">Email</a></li>
         </ul>
       </div>
     </div>
@@ -277,15 +276,13 @@
   <div class="w-full h-full bg-gradient-to-t from-[#0400f5]/10 to-transparent blur-3xl"></div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
   $(document).ready(function () {
     const socialPlatforms = [
-      'twitch', 'steam', 'discord', 'snapchat', 'instagram', 'twitter',
-      'bluesky', 'youtube', 'tiktok', 'facebook', 'linkedin', 'reddit',
-      'mastodon', 'threads', 'pinterest', 'spotify', 'apple', 'github',
-      'dribbble', 'behance', 'medium', 'substack', 'patreon', 'ko-fi'
+      'twitch', 'steam', 'discord', 'snapchat', 'instagram',
+      'twitter', 'bluesky', 'youtube', 'tiktok', 'linkedin',
+      'reddit', 'threads', 'github', 'ko-fi'
     ];
 
     let currentIndex = 0;
@@ -337,19 +334,13 @@
       linksModal.removeClass('active');
     }
 
-    // Desktop sidebar
     $('#about-side-btn').on('click', function (e) { e.preventDefault(); openAbout(); });
     $('#links-side-btn').on('click', function (e) { e.preventDefault(); openLinks(); });
-
-    // Mobile bottom nav
     $('#about-mobile-btn').on('click', function (e) { e.preventDefault(); openAbout(); });
     $('#links-mobile-btn').on('click', function (e) { e.preventDefault(); openLinks(); });
-
-    // Close buttons
     $('#close-about').on('click', doCloseAbout);
     $('#close-links').on('click', doCloseLinks);
 
-    // Close on background click
     $(document).on('click', function (e) {
       if (aboutModal.hasClass('active') &&
           !$(e.target).closest('#about-modal .glass-panel, #about-modal > div').length &&
