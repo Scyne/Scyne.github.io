@@ -71,7 +71,7 @@
   }
 </script>
 <style>
-  .material-symbols-outlined {
+.material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     display: inline-block;
     line-height: 1;
@@ -81,7 +81,7 @@
     white-space: nowrap;
     direction: ltr;
   }
-  .video-docker {
+.video-docker {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
@@ -89,7 +89,7 @@
     z-index: -1;
     background: #00000C;
   }
-  .video-docker iframe {
+.video-docker iframe {
     position: absolute;
     top: 50%; left: 50%;
     width: 177.77vh;
@@ -100,13 +100,13 @@
     pointer-events: none;
   }
   @media (max-aspect-ratio: 16/9) {
-    .video-docker iframe { width: 177.78vh; }
+  .video-docker iframe { width: 177.78vh; }
   }
-  .text-vertical {
+.text-vertical {
     writing-mode: vertical-lr;
     text-orientation: mixed;
   }
-  .glass-panel {
+.glass-panel {
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -115,7 +115,7 @@
   #cycling-service {
     transition: opacity 0.2s ease;
   }
-  .cycling-fade {
+.cycling-fade {
     opacity: 0.7;
   }
 
@@ -162,10 +162,6 @@
 <!-- Top Header -->
 <header class="fixed top-0 w-full z-50 flex justify-between items-center px-8 py-6">
   <div></div>
-  <nav class="hidden md:flex items-center gap-12"></nav>
-  <button class="md:hidden text-[#0400f5] hover:scale-95 duration-200 ease-in-out">
-    <span class="material-symbols-outlined text-4xl">menu</span>
-  </button>
 </header>
 
 <!-- ── DESKTOP: Right Sidebar ── -->
@@ -267,12 +263,13 @@
 </main>
 
 <!-- Footer -->
-<footer class="fixed bottom-16 md:bottom-0 w-full flex justify-between px-8 py-4 z-40 bg-transparent">
-  <div class="font-body text-[10px] uppercase tracking-[0.2em] text-[#8693AB]">© 2026 SCYNE</div>
+<footer class="fixed bottom-16 md:bottom-0 w-full flex justify-between items-center px-8 md:pr-28 py-4 z-40 bg-transparent font-body uppercase tracking-[0.2em] text-[#8693AB]">
+  <div class="text-[5px]">© 2026 SCYNE</div>
+  <div id="beat-time" class="text-">@000</div>
 </footer>
 
 <!-- Background Decoration -->
-<div class="fixed bottom-0 left-0 w-full h-[307px] pointer-events-none z-0 opacity-40">
+<div class="fixed bottom-0 left-0 w-full h- pointer-events-none z-0 opacity-40">
   <div class="w-full h-full bg-gradient-to-t from-[#0400f5]/10 to-transparent blur-3xl"></div>
 </div>
 
@@ -334,6 +331,15 @@
       linksModal.removeClass('active');
     }
 
+    function updateBeatTime() {
+        const now = new Date();
+        const seconds = (now.getUTCHours() * 3600) + (now.getUTCMinutes() * 60) + now.getUTCSeconds() + 3600; // UTC+1
+        let beats = (seconds % 86400) / 86.4;
+        beats = Math.floor(beats);
+        const beatString = '@' + beats.toString().padStart(3, '0');
+        $('#beat-time').text(beatString);
+    }
+
     $('#about-side-btn').on('click', function (e) { e.preventDefault(); openAbout(); });
     $('#links-side-btn').on('click', function (e) { e.preventDefault(); openLinks(); });
     $('#about-mobile-btn').on('click', function (e) { e.preventDefault(); openAbout(); });
@@ -343,16 +349,20 @@
 
     $(document).on('click', function (e) {
       if (aboutModal.hasClass('active') &&
-          !$(e.target).closest('#about-modal .glass-panel, #about-modal > div').length &&
-          !$(e.target).closest('#about-side-btn, #about-mobile-btn').length) {
+        !$(e.target).closest('#about-modal.glass-panel, #about-modal > div').length &&
+        !$(e.target).closest('#about-side-btn, #about-mobile-btn').length) {
         doCloseAbout();
       }
       if (linksModal.hasClass('active') &&
-          !$(e.target).closest('#links-modal .glass-panel, #links-modal > div').length &&
-          !$(e.target).closest('#links-side-btn, #links-mobile-btn').length) {
+        !$(e.target).closest('#links-modal.glass-panel, #links-modal > div').length &&
+        !$(e.target).closest('#links-side-btn, #links-mobile-btn').length) {
         doCloseLinks();
       }
     });
+
+    //.beat time
+    updateBeatTime();
+    setInterval(updateBeatTime, 1000);
   });
 </script>
 </body>
